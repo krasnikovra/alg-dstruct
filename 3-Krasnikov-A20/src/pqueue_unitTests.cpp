@@ -1,5 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
-
 #include "gtest/gtest.h"
 #include "pqueue.h"
 #include "stdlib.h"
@@ -8,18 +6,16 @@
 
 TEST(pqueue_push_Test, pqueue_push_pushInEmptyQueue_returnValidVal) {
     pqueue_t* q = pqueue_init();
-    char first[MAX_WORD_LENGTH];
-    strcpy_s(first, "first");  // This is needed because cpp's "first" constant cant be casted to void*
+    char first[MAX_WORD_LENGTH] = "first";
     pqueue_push(q, first, 1);
     EXPECT_TRUE(!strcmp((char*)(q->head->next->data), first));
 }
 
 TEST(pqueue_push_Test, pqueue_push_pushManyItems_returnValidItemsInValidOrder) {
     pqueue_t* q = pqueue_init();
-    char first[MAX_WORD_LENGTH], second[MAX_WORD_LENGTH], third[MAX_WORD_LENGTH];
-    strcpy(first, "first");
-    strcpy(second, "second");
-    strcpy(third, "third");
+    char first[MAX_WORD_LENGTH] = "first";
+    char second[MAX_WORD_LENGTH] = "second";
+    char third[MAX_WORD_LENGTH] = "third";
     pqueue_push(q, third, 3);
     pqueue_push(q, first, 1);
     pqueue_push(q, second, 2);
@@ -35,8 +31,7 @@ TEST(pqueue_isempty_Test, pqueue_isempty_isemptyEmptyQueue_returnTrue) {
 
 TEST(pqueue_pop_Test, pqueue_pop_popOneItem_returnValidVal) {
     pqueue_t* q = pqueue_init();
-    char first[MAX_WORD_LENGTH];
-    strcpy_s(first, "first");
+    char first[MAX_WORD_LENGTH] = "first";
     node_t* new_node = (node_t*)malloc(sizeof(node_t));
     new_node->next = NULL;
     new_node->data = first;
@@ -48,10 +43,9 @@ TEST(pqueue_pop_Test, pqueue_pop_popOneItem_returnValidVal) {
 
 TEST(pqueue_pop_Test, pqueue_pop_popManyItems_returnValidVal) {
     pqueue_t* q = pqueue_init();
-    char first[MAX_WORD_LENGTH], second[MAX_WORD_LENGTH], third[MAX_WORD_LENGTH];
-    strcpy(first, "first");
-    strcpy(second, "second");
-    strcpy(third, "third");
+    char first[MAX_WORD_LENGTH] = "first";
+    char second[MAX_WORD_LENGTH] = "second";
+    char third[MAX_WORD_LENGTH] = "third";
 
     node_t* new_node = (node_t*)malloc(sizeof(node_t));
     new_node->next = NULL;
