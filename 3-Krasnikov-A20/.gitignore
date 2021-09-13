@@ -5,3 +5,5 @@
 **.vcxproj
 **.vcxproj.filters
 **.vcxproj.user
+src/main.c
+src/googletest
