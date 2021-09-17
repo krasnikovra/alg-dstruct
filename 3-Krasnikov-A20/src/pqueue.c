@@ -22,7 +22,7 @@ pqueue_t* pqueue_init(void) {
 error_t pqueue_push(pqueue_t* pqueue, void* data, unsigned priority) {
     node_t* iter = pqueue->head->next;
     node_t* iter_prev = pqueue->head;
-    while(iter != NULL && iter->priority < priority){
+    while(iter != NULL && iter->priority <= priority){
         iter_prev = iter;
         iter = iter->next;
     }

@@ -24,6 +24,19 @@ TEST(pqueue_push_Test, pqueue_push_pushManyItems_returnValidItemsInValidOrder) {
     EXPECT_TRUE(!strcmp((char*)q->head->next->next->next->data, third));
 }
 
+TEST(pqueue_push_Test, pqueue_push_pushManyItemsSamePriorities_returnValidItemsInValidOrder) {
+    pqueue_t* q = pqueue_init();
+    char first[MAX_WORD_LENGTH] = "first";
+    char second[MAX_WORD_LENGTH] = "second";
+    char third[MAX_WORD_LENGTH] = "third";
+    pqueue_push(q, first, 0);
+    pqueue_push(q, second, 0);
+    pqueue_push(q, third, 0);
+    EXPECT_TRUE(!strcmp((char*)q->head->next->data, first));
+    EXPECT_TRUE(!strcmp((char*)q->head->next->next->data, second));
+    EXPECT_TRUE(!strcmp((char*)q->head->next->next->next->data, third));
+}
+
 TEST(pqueue_isempty_Test, pqueue_isempty_isemptyEmptyQueue_returnTrue) {
     pqueue_t* q = pqueue_init();
     EXPECT_TRUE(pqueue_isempty(q));
