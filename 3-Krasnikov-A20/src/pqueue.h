@@ -23,7 +23,7 @@ typedef enum {
 pqueue_t* pqueue_init(void);
 error_t pqueue_push(pqueue_t* pqueue, void* data, unsigned priority);
 char pqueue_isempty(pqueue_t* pqueue);
-void* pqueue_pop(pqueue_t* pqueue);
+void* pqueue_pop(pqueue_t* pqueue); //returns minimum
 void pqueue_destroy(pqueue_t* pqueue);
 
 #ifdef __cplusplus

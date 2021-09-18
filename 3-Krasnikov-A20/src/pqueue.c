@@ -13,8 +13,10 @@ pqueue_t* pqueue_init(void) {
     helper->data = NULL;
     helper->priority = 0;
     pqueue_t* pqueue = (pqueue_t*)malloc(sizeof(pqueue_t));
-    if (!pqueue)
+    if (!pqueue) {
+        free(helper);
         return NULL; // returns NULL if mem alloc failed which is similar to malloc return
+    }
     pqueue->head = helper;
     return pqueue;
 }
@@ -22,7 +24,7 @@ pqueue_t* pqueue_init(void) {
 error_t pqueue_push(pqueue_t* pqueue, void* data, unsigned priority) {
     node_t* iter = pqueue->head->next;
     node_t* iter_prev = pqueue->head;
-    while(iter != NULL && iter->priority <= priority){
+    while (iter && iter->priority <= priority) {
         iter_prev = iter;
         iter = iter->next;
     }
