@@ -1,0 +1,11 @@
+**Debug
+**Release
+**.vs
+**.sln
+**.vcxproj
+**.vcxproj.filters
+**.vcxproj.user
+googletest
+
+# this src is only for manual debugging
+src/main.c
