@@ -8,4 +8,4 @@
 googletest
 
 # this src is only for manual debugging
-src/main.c
+src/main.cpp

@@ -1,21 +1,17 @@
 #include <stdio.h>
 #include "../../lab2/memallocator.h"
-
-typedef struct {
-    int size; // size of block includes size of descriptor too
-    void* next;
-} desc_t; // memory block descriptor
+#include "../include/memalloc_utils.h"
 
 static desc_t* s_head = NULL;
 static void* s_pmemory = NULL;
 static int s_size = 0;
 
-static int _myabs(int x) {
+int myabs(int x) {
     return x >= 0 ? x : -x;
 }
 
-static int* _getrightsizeofblock(desc_t* desc) {
-    return (int*)((char*)desc + _myabs(desc->size) - sizeof(int));
+int* getrightsizeofblock(desc_t* desc) {
+    return (int*)((char*)desc + myabs(desc->size) - sizeof(int));
 }
 
 int meminit(void* pMemory, int size) {
@@ -27,7 +23,7 @@ int meminit(void* pMemory, int size) {
     s_head = desc;
     s_pmemory = pMemory;
     s_size = size;
-    *_getrightsizeofblock(desc) = size;
+    *getrightsizeofblock(desc) = size;
     return size;
 }
 
@@ -37,7 +33,7 @@ void memdone() {
         if (iter->size < 0)
             // info for user so ptr not on desc but on user's part of block
             printf("[MEMORY LEAK] block at 0x%p\n", iter + 1); 
-        iter = (desc_t*)((char*)iter + _myabs(iter->size));
+        iter = (desc_t*)((char*)iter + myabs(iter->size));
     }
 }
 
@@ -69,7 +65,7 @@ void* memalloc(int size) {
         desc_t* free_block_desc = (desc_t*)((char*)bestfit + memgetblocksize() + size);
         free_block_desc->size = bestfit->size - memgetblocksize() - size;
         free_block_desc->next = bestfit->next;
-        *_getrightsizeofblock(free_block_desc) = free_block_desc->size;
+        *getrightsizeofblock(free_block_desc) = free_block_desc->size;
         if (bestfit_prev)
             bestfit_prev->next = free_block_desc;
         else
@@ -84,7 +80,7 @@ void* memalloc(int size) {
             s_head = bestfit->next;
     }
     bestfit->size = -bestfit->size; // if block is allocated for user its size is negative
-    *_getrightsizeofblock(bestfit) = bestfit->size;
+    *getrightsizeofblock(bestfit) = bestfit->size;
     bestfit->next = NULL;
     // returning ptr on memory after bestfit descriptor for user usage
     return (void*)(bestfit + 1);
@@ -93,7 +89,7 @@ void* memalloc(int size) {
 void memfree(void* p) {
     desc_t* pdesc = (desc_t*)p - 1;
     pdesc->size = -pdesc->size; // converting size to positive which means block is not allocated for user now
-    *_getrightsizeofblock(pdesc) = pdesc->size;
+    *getrightsizeofblock(pdesc) = pdesc->size;
     pdesc->next = s_head;
     s_head = pdesc;
     // anti-fragmentation feauture: if we have free block in the right of freed we need to merge them in one block
@@ -113,13 +109,13 @@ void memfree(void* p) {
             // skipping right_block_desc in free space list as it will be merged with pdesc
             right_block_desc_prev->next = right_block_desc->next;
             pdesc->size += right_block_desc->size;
-            *_getrightsizeofblock(pdesc) = pdesc->size;
+            *getrightsizeofblock(pdesc) = pdesc->size;
         }
     // anti-fragmentation feauture: if we have free block in the left of freed we need to merge them in one block
     // go backwards for one byte to check if we are on the edge of memory or have any block to the left
     if ((char*)pdesc - 1 > (char*)s_pmemory) {
         int left_block_size = *(int*)((char*)pdesc - sizeof(int)); // danger: we can assume garbage as some size
-        desc_t* left_block_desc = (desc_t*)((char*)pdesc - _myabs(left_block_size));
+        desc_t* left_block_desc = (desc_t*)((char*)pdesc - myabs(left_block_size));
         // if this block is free
         if (left_block_desc->size > 0) {
             // search to the left_block_desc_prev in free space list
@@ -137,7 +133,7 @@ void memfree(void* p) {
             s_head->next = pdesc->next;
             // updating size
             left_block_desc->size += pdesc->size;
-            *_getrightsizeofblock(left_block_desc) = left_block_desc->size;
+            *getrightsizeofblock(left_block_desc) = left_block_desc->size;
         }
     }
 }
