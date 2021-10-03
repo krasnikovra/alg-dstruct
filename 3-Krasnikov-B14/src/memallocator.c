@@ -2,9 +2,9 @@
 #include "../../lab2/memallocator.h"
 #include "../include/memalloc_utils.h"
 
-static desc_t* s_head = NULL;
-static void* s_pmemory = NULL;
-static int s_size = 0;
+desc_t* s_head = NULL;
+void* s_pmemory = NULL;
+int s_size = 0;
 
 int myabs(int x) {
     return x >= 0 ? x : -x;
@@ -15,7 +15,8 @@ int* getrightsizeofblock(desc_t* desc) {
 }
 
 int meminit(void* pMemory, int size) {
-    if (size < memgetminimumsize())
+    // 0 byte block should not be available to init similar to memalloc behaviour 
+    if (size <= memgetminimumsize())
         return 0;
     desc_t* desc = (desc_t*)pMemory;
     desc->size = size;
@@ -32,7 +33,7 @@ void memdone() {
     while ((char*)iter < (char*)s_pmemory + s_size) {
         if (iter->size < 0)
             // info for user so ptr not on desc but on user's part of block
-            printf("[MEMORY LEAK] block at 0x%p\n", iter + 1); 
+            fprintf(stderr, "[MEMORY LEAK] block at 0x%p\n", iter + 1); 
         iter = (desc_t*)((char*)iter + myabs(iter->size));
     }
 }
@@ -55,7 +56,7 @@ void* memalloc(int size) {
             }
         }
         iter_prev = iter;
-        iter = iter->next;
+        iter = (desc_t*)iter->next;
     }
     if (!block_found)
         return NULL;
@@ -77,7 +78,7 @@ void* memalloc(int size) {
         if (bestfit_prev)
             bestfit_prev->next = bestfit->next;
         else
-            s_head = bestfit->next;
+            s_head = (desc_t*)bestfit->next;
     }
     bestfit->size = -bestfit->size; // if block is allocated for user its size is negative
     *getrightsizeofblock(bestfit) = bestfit->size;
@@ -126,7 +127,7 @@ void memfree(void* p) {
                     left_block_desc_prev = iter;
                     break;
                 }
-            // skipping right_block_desc in free space list as it will be merged with pdesc
+            // skipping left_block_desc in free space list as it will be merged with pdesc
             left_block_desc_prev->next = left_block_desc->next;
             // left_block_desc is new head as pdesc was merged into it
             s_head = left_block_desc;

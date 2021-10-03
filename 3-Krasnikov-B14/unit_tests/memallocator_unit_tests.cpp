@@ -7,6 +7,7 @@
 #include "../include/memalloc_utils.h"
 
 #define TEST_MEMORY_TEXT_BLOCK_SIZE 10
+#define CNULL (void*)0 // NULL is defined as 0 in cpp somewhere so need a c NULL instead
 
 // meminit is being tested with ASSERT_EQ instead of EXPECT_EQ so I can use it in further tests
 // this is simple func so it is hard not to use it in tests, if i do so it will be copy-pasted meminit func
@@ -19,13 +20,13 @@ TEST(meminit_Test, meminit_meminit_expectValidBlockMarkup) {
     desc_t* desc = (desc_t*)ptr;
     ASSERT_EQ(bytes_init, TEST_MEMORY_SIZE_INIT);
     ASSERT_EQ(desc->size, TEST_MEMORY_SIZE_INIT);
-    ASSERT_EQ(desc->next, nullptr);
+    ASSERT_EQ(desc->next, CNULL);
     ASSERT_EQ(*getrightsizeofblock(desc), TEST_MEMORY_SIZE_INIT);
     free(ptr);
 }
 
 TEST(meminit_Test, meminit_meminitTooLittleBytes_expectZeroBytesInit) {
-    const int TEST_MEMORY_SIZE_NOT_ENOUGH_TO_INIT = memgetminimumsize() - 1;
+    const int TEST_MEMORY_SIZE_NOT_ENOUGH_TO_INIT = memgetminimumsize();
     void* ptr = malloc(TEST_MEMORY_SIZE_NOT_ENOUGH_TO_INIT);
     assert(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_NOT_ENOUGH_TO_INIT);
@@ -43,7 +44,7 @@ TEST(memalloc_Test, memalloc_memallocAllInitMemory_expectSizeIsNegative) {
     char* a = (char*)memalloc(TEST_MEMORY_TEXT_BLOCK_SIZE);
     EXPECT_EQ(bytes_init, TEST_MEMORY_SIZE_INIT);
     EXPECT_EQ(desc->size, -TEST_MEMORY_SIZE_INIT);
-    EXPECT_EQ(desc->next, nullptr);
+    EXPECT_EQ(desc->next, CNULL);
     EXPECT_EQ(*getrightsizeofblock(desc), -TEST_MEMORY_SIZE_INIT);
     free(ptr);
 }
@@ -57,11 +58,11 @@ TEST(memalloc_Test, memalloc_memallocAllInitMemoryWriteSmth_expectBlockInfoNotCo
     assert(bytes_init);
     desc_t* desc = (desc_t*)ptr;
     char* a = (char*)memalloc(TEST_MEMORY_TEXT_BLOCK_SIZE);
-    // copying smth to *a not more than TEST_MEMORY_SIZE so if smth goes wrong block info will be damaged
+    // copying smth to *a not more than TEST_MEMORY_TEXT_BLOCK_SIZE so if smth goes wrong block info will be damaged
     strcpy(a, sometext);
     EXPECT_EQ(bytes_init, TEST_MEMORY_SIZE_INIT);
     EXPECT_EQ(desc->size, -TEST_MEMORY_SIZE_INIT);
-    EXPECT_EQ(desc->next, nullptr);
+    EXPECT_EQ(desc->next, CNULL);
     EXPECT_EQ(*getrightsizeofblock(desc), -TEST_MEMORY_SIZE_INIT);
     EXPECT_TRUE(!strcmp(a, sometext));
     free(ptr);
@@ -76,10 +77,10 @@ TEST(memalloc_Test, memalloc_memallocAllInitMemoryNextMemallocFail_expectSecondM
     desc_t* desc = (desc_t*)ptr;
     char* a = (char*)memalloc(TEST_MEMORY_TEXT_BLOCK_SIZE);
     char* b = (char*)memalloc(TEST_MEMORY_TEXT_BLOCK_SIZE);
-    EXPECT_EQ(b, nullptr);
+    EXPECT_EQ(b, CNULL);
     EXPECT_EQ(bytes_init, TEST_MEMORY_SIZE_INIT);
     EXPECT_EQ(desc->size, -TEST_MEMORY_SIZE_INIT);
-    EXPECT_EQ(desc->next, nullptr);
+    EXPECT_EQ(desc->next, CNULL);
     EXPECT_EQ(*getrightsizeofblock(desc), -TEST_MEMORY_SIZE_INIT);
     free(ptr);
 }
@@ -96,10 +97,10 @@ TEST(memalloc_Test, memalloc_memallocInitTextBlockAndCharBlock_expectMemoryAlloc
     desc_t* desc_b = (desc_t*)b_char - 1;
     EXPECT_EQ(bytes_init, TEST_MEMORY_SIZE_INIT);
     EXPECT_EQ(desc_a->size, -(TEST_MEMORY_TEXT_BLOCK_SIZE + memgetblocksize()));
-    EXPECT_EQ(desc_a->next, nullptr);
+    EXPECT_EQ(desc_a->next, CNULL);
     EXPECT_EQ(*getrightsizeofblock(desc_a), -(TEST_MEMORY_TEXT_BLOCK_SIZE + memgetblocksize()));
     EXPECT_EQ(desc_a->size, -(TEST_MEMORY_TEXT_BLOCK_SIZE + memgetblocksize()));
-    EXPECT_EQ(desc_a->next, nullptr);
+    EXPECT_EQ(desc_a->next, CNULL);
     EXPECT_EQ(*getrightsizeofblock(desc_a), -(TEST_MEMORY_TEXT_BLOCK_SIZE + memgetblocksize()));
     free(ptr);
 }
@@ -120,10 +121,10 @@ TEST(memalloc_Test, memalloc_memallocInitTextBlockAndCharBlock_expectNoBlocksCor
     *b_char = b;
     EXPECT_EQ(bytes_init, TEST_MEMORY_SIZE_INIT);
     EXPECT_EQ(desc_a->size, -(TEST_MEMORY_TEXT_BLOCK_SIZE + memgetblocksize()));
-    EXPECT_EQ(desc_a->next, nullptr);
+    EXPECT_EQ(desc_a->next, CNULL);
     EXPECT_EQ(*getrightsizeofblock(desc_a), -(TEST_MEMORY_TEXT_BLOCK_SIZE + memgetblocksize()));
     EXPECT_EQ(desc_a->size, -(TEST_MEMORY_TEXT_BLOCK_SIZE + memgetblocksize()));
-    EXPECT_EQ(desc_a->next, nullptr);
+    EXPECT_EQ(desc_a->next, CNULL);
     EXPECT_EQ(*getrightsizeofblock(desc_a), -(TEST_MEMORY_TEXT_BLOCK_SIZE + memgetblocksize()));
     EXPECT_TRUE(!strcmp(a_text, sometext));
     EXPECT_EQ(*b_char, b);
