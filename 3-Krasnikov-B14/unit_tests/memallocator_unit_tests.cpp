@@ -162,6 +162,7 @@ TEST(memalloc_Test, memalloc_memallocAllocatingBestFitBlock_expectOneByteBlockFo
     // memalloc a free char block
     void* memallocated_char_block_for_user_ptr = memalloc((int)sizeof(char));
     EXPECT_EQ((char*)memallocated_char_block_for_user_ptr, (char*)free_char_block_desc + sizeof(int) + sizeof(void*));
+    free(ptr);
 }
 
 TEST(memfree_Test, memfree_memfreeFreeOneBlock_expectSizeIsPositive) {
@@ -180,6 +181,7 @@ TEST(memfree_Test, memfree_memfreeFreeOneBlock_expectSizeIsPositive) {
     memfree(user_ptr_to_block);
     EXPECT_EQ(*getleftsizeofblock(all_init_memory_block_desc), myabs(*getleftsizeofblock(all_init_memory_block_desc)));
     EXPECT_EQ(*getrightsizeofblock(all_init_memory_block_desc), myabs(*getrightsizeofblock(all_init_memory_block_desc)));
+    free(ptr);
 }
 
 TEST(memfree_Test, memfree_memfreeFreeBlockWhereRightBlockIsFree_expectBlocksMerged) {
@@ -205,6 +207,7 @@ TEST(memfree_Test, memfree_memfreeFreeBlockWhereRightBlockIsFree_expectBlocksMer
     EXPECT_EQ(*getleftsizeofblock(allocated_char_block_desc), bytes_init);
     EXPECT_EQ(*getrightsizeofblock(allocated_char_block_desc), bytes_init);
     EXPECT_EQ(s_head, ptr);
+    free(ptr);
 }
 
 TEST(memfree_Test, memfree_memfreeFreeBlockWhereLeftBlockIsFree_expectBlocksMerged) {
@@ -230,6 +233,7 @@ TEST(memfree_Test, memfree_memfreeFreeBlockWhereLeftBlockIsFree_expectBlocksMerg
     EXPECT_EQ(*getleftsizeofblock(free_char_block_desc), bytes_init);
     EXPECT_EQ(*getrightsizeofblock(free_char_block_desc), bytes_init);
     EXPECT_EQ(s_head, ptr);
+    free(ptr);
 }
 
 TEST(memfree_Test, memfree_memfreeFreeBlockBetweenTwoFreeBlocks_expectBlocksMerged) {
@@ -261,4 +265,5 @@ TEST(memfree_Test, memfree_memfreeFreeBlockBetweenTwoFreeBlocks_expectBlocksMerg
     EXPECT_EQ(*getleftsizeofblock(first_free_char_block_desc), bytes_init);
     EXPECT_EQ(*getrightsizeofblock(first_free_char_block_desc), bytes_init);
     EXPECT_EQ(s_head, ptr);
+    free(ptr);
 }
