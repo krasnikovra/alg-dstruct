@@ -13,6 +13,8 @@ typedef struct {
 int myabs(int x);
 int* getrightsizeofblock(desc_t* desc);
 
+extern desc_t* s_head;
+
 #ifdef __cplusplus
 }
 #endif

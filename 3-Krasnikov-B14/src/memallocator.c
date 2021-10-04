@@ -102,11 +102,13 @@ void memfree(void* p) {
             // search to the right_block_desc_prev in free space list
             desc_t* right_block_desc_prev = s_head;
             desc_t* iter = s_head;
-            while (iter)
+            while (iter) {
                 if (iter->next == right_block_desc) {
                     right_block_desc_prev = iter;
                     break;
                 }
+                iter = iter->next;
+            }
             // skipping right_block_desc in free space list as it will be merged with pdesc
             right_block_desc_prev->next = right_block_desc->next;
             pdesc->size += right_block_desc->size;
@@ -122,11 +124,13 @@ void memfree(void* p) {
             // search to the left_block_desc_prev in free space list
             desc_t* left_block_desc_prev = s_head;
             desc_t* iter = s_head;
-            while (iter)
+            while (iter) {
                 if (iter->next == left_block_desc) {
                     left_block_desc_prev = iter;
                     break;
                 }
+                iter = iter->next;
+            }
             // skipping left_block_desc in free space list as it will be merged with pdesc
             left_block_desc_prev->next = left_block_desc->next;
             // left_block_desc is new head as pdesc was merged into it
