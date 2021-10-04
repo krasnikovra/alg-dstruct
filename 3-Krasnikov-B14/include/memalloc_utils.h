@@ -5,15 +5,12 @@
 extern "C" {
 #endif
 
-typedef struct {
-    int size; // size of block includes size of descriptor too
-    void* next;
-} desc_t; // memory block descriptor
-
 int myabs(int x);
-int* getrightsizeofblock(desc_t* desc);
+int* getrightsizeofblock(void* desc);
+int* getleftsizeofblock(void* desc);
+void** getblocknext(void* desc);
 
-extern desc_t* s_head;
+extern void* s_head;
 
 #ifdef __cplusplus
 }

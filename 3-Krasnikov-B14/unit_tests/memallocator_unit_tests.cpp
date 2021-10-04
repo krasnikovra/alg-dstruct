@@ -17,10 +17,10 @@ TEST(meminit_Test, meminit_meminit_expectValidBlockMarkup) {
     assert(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
     assert(bytes_init);
-    desc_t* desc = (desc_t*)ptr;
+    void* desc = ptr;
     ASSERT_EQ(bytes_init, TEST_MEMORY_SIZE_INIT);
-    ASSERT_EQ(desc->size, TEST_MEMORY_SIZE_INIT);
-    ASSERT_EQ(desc->next, CNULL);
+    ASSERT_EQ(*getleftsizeofblock(desc) , TEST_MEMORY_SIZE_INIT);
+    ASSERT_EQ(*getblocknext(desc), CNULL);
     ASSERT_EQ(*getrightsizeofblock(desc), TEST_MEMORY_SIZE_INIT);
     free(ptr);
 }
@@ -40,11 +40,11 @@ TEST(memalloc_Test, memalloc_memallocAllInitMemory_expectSizeIsNegative) {
     assert(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
     assert(bytes_init);
-    desc_t* desc = (desc_t*)ptr;
+    void* desc = ptr;
     char* a = (char*)memalloc(TEST_MEMORY_TEXT_BLOCK_SIZE);
     EXPECT_EQ(bytes_init, TEST_MEMORY_SIZE_INIT);
-    EXPECT_EQ(desc->size, -TEST_MEMORY_SIZE_INIT);
-    EXPECT_EQ(desc->next, CNULL);
+    EXPECT_EQ(*getleftsizeofblock(desc), -TEST_MEMORY_SIZE_INIT);
+    EXPECT_EQ(*getblocknext(desc), CNULL);
     EXPECT_EQ(*getrightsizeofblock(desc), -TEST_MEMORY_SIZE_INIT);
     free(ptr);
 }
@@ -56,13 +56,13 @@ TEST(memalloc_Test, memalloc_memallocAllInitMemoryWriteSmth_expectBlockInfoNotCo
     assert(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
     assert(bytes_init);
-    desc_t* desc = (desc_t*)ptr;
+    void* desc = ptr;
     char* a = (char*)memalloc(TEST_MEMORY_TEXT_BLOCK_SIZE);
     // copying smth to *a not more than TEST_MEMORY_TEXT_BLOCK_SIZE so if smth goes wrong block info will be damaged
     strcpy(a, sometext);
     EXPECT_EQ(bytes_init, TEST_MEMORY_SIZE_INIT);
-    EXPECT_EQ(desc->size, -TEST_MEMORY_SIZE_INIT);
-    EXPECT_EQ(desc->next, CNULL);
+    EXPECT_EQ(*getleftsizeofblock(desc), -TEST_MEMORY_SIZE_INIT);
+    EXPECT_EQ(*getblocknext(desc), CNULL);
     EXPECT_EQ(*getrightsizeofblock(desc), -TEST_MEMORY_SIZE_INIT);
     EXPECT_TRUE(!strcmp(a, sometext));
     free(ptr);
@@ -74,13 +74,13 @@ TEST(memalloc_Test, memalloc_memallocAllInitMemoryNextMemallocFail_expectSecondM
     assert(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
     assert(bytes_init);
-    desc_t* desc = (desc_t*)ptr;
+    void* desc = ptr;
     char* a = (char*)memalloc(TEST_MEMORY_TEXT_BLOCK_SIZE);
     char* b = (char*)memalloc(TEST_MEMORY_TEXT_BLOCK_SIZE);
     EXPECT_EQ(b, CNULL);
     EXPECT_EQ(bytes_init, TEST_MEMORY_SIZE_INIT);
-    EXPECT_EQ(desc->size, -TEST_MEMORY_SIZE_INIT);
-    EXPECT_EQ(desc->next, CNULL);
+    EXPECT_EQ(*getleftsizeofblock(desc), -TEST_MEMORY_SIZE_INIT);
+    EXPECT_EQ(*getblocknext(desc), CNULL);
     EXPECT_EQ(*getrightsizeofblock(desc), -TEST_MEMORY_SIZE_INIT);
     free(ptr);
 }
@@ -93,15 +93,15 @@ TEST(memalloc_Test, memalloc_memallocInitTextBlockAndCharBlock_expectMemoryAlloc
     assert(bytes_init);
     char* a_text = (char*)memalloc(TEST_MEMORY_TEXT_BLOCK_SIZE);
     char* b_char = (char*)memalloc(sizeof(char));
-    desc_t* desc_a = (desc_t*)a_text - 1;
-    desc_t* desc_b = (desc_t*)b_char - 1;
+    void* desc_a = (void*)((char*)a_text - sizeof(int) - sizeof(void*));
+    void* desc_b = (void*)((char*)b_char - sizeof(int) - sizeof(void*));
     EXPECT_EQ(bytes_init, TEST_MEMORY_SIZE_INIT);
-    EXPECT_EQ(desc_a->size, -(TEST_MEMORY_TEXT_BLOCK_SIZE + memgetblocksize()));
-    EXPECT_EQ(desc_a->next, CNULL);
+    EXPECT_EQ(*getleftsizeofblock(desc_a), -(TEST_MEMORY_TEXT_BLOCK_SIZE + memgetblocksize()));
+    EXPECT_EQ(*getblocknext(desc_a), CNULL);
     EXPECT_EQ(*getrightsizeofblock(desc_a), -(TEST_MEMORY_TEXT_BLOCK_SIZE + memgetblocksize()));
-    EXPECT_EQ(desc_a->size, -(TEST_MEMORY_TEXT_BLOCK_SIZE + memgetblocksize()));
-    EXPECT_EQ(desc_a->next, CNULL);
-    EXPECT_EQ(*getrightsizeofblock(desc_a), -(TEST_MEMORY_TEXT_BLOCK_SIZE + memgetblocksize()));
+    EXPECT_EQ(*getleftsizeofblock(desc_b), -((int)sizeof(char) + memgetblocksize()));
+    EXPECT_EQ(*getblocknext(desc_b), CNULL);
+    EXPECT_EQ(*getrightsizeofblock(desc_b), -((int)sizeof(char) + memgetblocksize()));
     free(ptr);
 }
 
@@ -115,17 +115,17 @@ TEST(memalloc_Test, memalloc_memallocInitTextBlockAndCharBlock_expectNoBlocksCor
     assert(bytes_init);
     char* a_text = (char*)memalloc(TEST_MEMORY_TEXT_BLOCK_SIZE);
     char* b_char = (char*)memalloc(sizeof(char));
-    desc_t* desc_a = (desc_t*)a_text - 1;
-    desc_t* desc_b = (desc_t*)b_char - 1;
+    void* desc_a = (void*)((char*)a_text - sizeof(int) - sizeof(void*));
+    void* desc_b = (void*)((char*)b_char - sizeof(int) - sizeof(void*));
     strcpy(a_text, sometext);
     *b_char = b;
     EXPECT_EQ(bytes_init, TEST_MEMORY_SIZE_INIT);
-    EXPECT_EQ(desc_a->size, -(TEST_MEMORY_TEXT_BLOCK_SIZE + memgetblocksize()));
-    EXPECT_EQ(desc_a->next, CNULL);
+    EXPECT_EQ(*getleftsizeofblock(desc_a), -(TEST_MEMORY_TEXT_BLOCK_SIZE + memgetblocksize()));
+    EXPECT_EQ(*getblocknext(desc_a), CNULL);
     EXPECT_EQ(*getrightsizeofblock(desc_a), -(TEST_MEMORY_TEXT_BLOCK_SIZE + memgetblocksize()));
-    EXPECT_EQ(desc_a->size, -(TEST_MEMORY_TEXT_BLOCK_SIZE + memgetblocksize()));
-    EXPECT_EQ(desc_a->next, CNULL);
-    EXPECT_EQ(*getrightsizeofblock(desc_a), -(TEST_MEMORY_TEXT_BLOCK_SIZE + memgetblocksize()));
+    EXPECT_EQ(*getleftsizeofblock(desc_b), -((int)sizeof(char) + memgetblocksize()));
+    EXPECT_EQ(*getblocknext(desc_b), CNULL);
+    EXPECT_EQ(*getrightsizeofblock(desc_b), -((int)sizeof(char) + memgetblocksize()));
     EXPECT_TRUE(!strcmp(a_text, sometext));
     EXPECT_EQ(*b_char, b);
     free(ptr);
@@ -142,26 +142,26 @@ TEST(memalloc_Test, memalloc_memallocAllocatingBestFitBlock_expectOneByteBlockFo
     // making a memory markup which is: free TEST_MEMORY_TEXT_BLOCK_SIZE block - allocated char block - free char block
     // expect that memalloc returns pointer to a free char block for memalloc(sizeof(char))
     // first free text block
-    desc_t* free_text_block_desc = (desc_t*)ptr;
+    void* free_text_block_desc = ptr;
     s_head = free_text_block_desc;
-    free_text_block_desc->size = TEST_MEMORY_TEXT_BLOCK_SIZE + memgetblocksize();
-    free_text_block_desc->next = CNULL; // reassign this to the third block when its will be defined
-    *getrightsizeofblock(free_text_block_desc) = free_text_block_desc->size;
+    *getleftsizeofblock(free_text_block_desc) = TEST_MEMORY_TEXT_BLOCK_SIZE + memgetblocksize();
+    *getblocknext(free_text_block_desc) = CNULL; // reassign this to the third block when its will be defined
+    *getrightsizeofblock(free_text_block_desc) = *getleftsizeofblock(free_text_block_desc);
     // second allocated char block
-    desc_t* allocated_char_block_desc = (desc_t*)((char*)free_text_block_desc + myabs(free_text_block_desc->size));
-    allocated_char_block_desc->size = -((int)sizeof(char) + memgetblocksize()); // block is allocated so size is negative
-    allocated_char_block_desc->next = CNULL;
-    *getrightsizeofblock(allocated_char_block_desc) = allocated_char_block_desc->size;
+    void* allocated_char_block_desc = (void*)((char*)free_text_block_desc + myabs(*getleftsizeofblock(free_text_block_desc)));
+    *getleftsizeofblock(allocated_char_block_desc) = -((int)sizeof(char) + memgetblocksize()); // block is allocated so size is negative
+    *getblocknext(allocated_char_block_desc) = CNULL;
+    *getrightsizeofblock(allocated_char_block_desc) = *getleftsizeofblock(allocated_char_block_desc);
     // third free char block
-    desc_t* free_char_block_desc = (desc_t*)((char*)allocated_char_block_desc + myabs(allocated_char_block_desc->size));
-    free_char_block_desc->size = (int)sizeof(char) + memgetblocksize();
-    free_char_block_desc->next = CNULL;
-    *getrightsizeofblock(free_char_block_desc) = free_char_block_desc->size;
+    void* free_char_block_desc = (void*)((char*)allocated_char_block_desc + myabs(*getleftsizeofblock(allocated_char_block_desc)));
+    *getleftsizeofblock(free_char_block_desc) = (int)sizeof(char) + memgetblocksize();
+    *getblocknext(free_char_block_desc) = CNULL;
+    *getrightsizeofblock(free_char_block_desc) = *getleftsizeofblock(free_char_block_desc);
     // reassigning free_text_block_desc next to free_char_block_desc to make simple free blocks list
-    free_text_block_desc->next = (void*)free_char_block_desc;
+    *getblocknext(free_text_block_desc) = free_char_block_desc;
     // memalloc a free char block
     void* memallocated_char_block_for_user_ptr = memalloc((int)sizeof(char));
-    EXPECT_EQ(memallocated_char_block_for_user_ptr, (void*)(free_char_block_desc + 1));
+    EXPECT_EQ((char*)memallocated_char_block_for_user_ptr, (char*)free_char_block_desc + sizeof(int) + sizeof(void*));
 }
 
 TEST(memfree_Test, memfree_memfreeFreeOneBlock_expectSizeIsPositive) {
@@ -171,15 +171,15 @@ TEST(memfree_Test, memfree_memfreeFreeOneBlock_expectSizeIsPositive) {
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
     assert(bytes_init);
     // making all init memory allocated block
-    desc_t* all_init_memory_block_desc = (desc_t*)ptr;
-    all_init_memory_block_desc->size = -all_init_memory_block_desc->size;
-    all_init_memory_block_desc->next = CNULL;
-    *getrightsizeofblock(all_init_memory_block_desc) = all_init_memory_block_desc->size;
+    void* all_init_memory_block_desc = ptr;
+    *getleftsizeofblock(all_init_memory_block_desc) = -*getleftsizeofblock(all_init_memory_block_desc);
+    *getblocknext(all_init_memory_block_desc) = CNULL;
+    *getrightsizeofblock(all_init_memory_block_desc) = *getleftsizeofblock(all_init_memory_block_desc);
     // freeing this block
-    void* user_ptr_to_block = (void*)(all_init_memory_block_desc + 1);
+    void* user_ptr_to_block = (void*)((char*)all_init_memory_block_desc + sizeof(int) + sizeof(void*));
     memfree(user_ptr_to_block);
-    EXPECT_EQ(all_init_memory_block_desc->size, myabs(all_init_memory_block_desc->size));
-    EXPECT_EQ(*getrightsizeofblock(all_init_memory_block_desc), myabs(all_init_memory_block_desc->size));
+    EXPECT_EQ(*getleftsizeofblock(all_init_memory_block_desc), myabs(*getleftsizeofblock(all_init_memory_block_desc)));
+    EXPECT_EQ(*getrightsizeofblock(all_init_memory_block_desc), myabs(*getrightsizeofblock(all_init_memory_block_desc)));
 }
 
 TEST(memfree_Test, memfree_memfreeFreeBlockWhereRightBlockIsFree_expectBlocksMerged) {
@@ -189,22 +189,22 @@ TEST(memfree_Test, memfree_memfreeFreeBlockWhereRightBlockIsFree_expectBlocksMer
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
     assert(bytes_init);
     // first block is allocated
-    desc_t* allocated_char_block_desc = (desc_t*)(ptr);
-    allocated_char_block_desc->size = -((int)sizeof(char) + memgetblocksize()); // block is allocated so size is negative
-    allocated_char_block_desc->next = CNULL;
-    *getrightsizeofblock(allocated_char_block_desc) = allocated_char_block_desc->size;
+    void* allocated_char_block_desc = ptr;
+    *getleftsizeofblock(allocated_char_block_desc) = -((int)sizeof(char) + memgetblocksize()); // block is allocated so size is negative
+    *getblocknext(allocated_char_block_desc) = CNULL;
+    *getrightsizeofblock(allocated_char_block_desc) = *getleftsizeofblock(allocated_char_block_desc);
     // second block is free
-    desc_t* free_char_block_desc = (desc_t*)((char*)allocated_char_block_desc + myabs(allocated_char_block_desc->size));
+    void* free_char_block_desc = (void*)((char*)allocated_char_block_desc + myabs(*getleftsizeofblock(allocated_char_block_desc)));
     s_head = free_char_block_desc;
-    free_char_block_desc->size = (int)sizeof(char) + memgetblocksize();
-    free_char_block_desc->next = CNULL;
-    *getrightsizeofblock(free_char_block_desc) = free_char_block_desc->size;
+    *getleftsizeofblock(free_char_block_desc) = (int)sizeof(char) + memgetblocksize();
+    *getblocknext(free_char_block_desc) = CNULL;
+    *getrightsizeofblock(free_char_block_desc) = *getleftsizeofblock(free_char_block_desc);
     // now freeing and expect memory state similar with state after meminit
-    void* user_ptr_to_allocated_block = (void*)(allocated_char_block_desc + 1);
+    void* user_ptr_to_allocated_block = (void*)((char*)allocated_char_block_desc + sizeof(int) + sizeof(void*));
     memfree(user_ptr_to_allocated_block);
-    EXPECT_EQ(allocated_char_block_desc->size, bytes_init);
+    EXPECT_EQ(*getleftsizeofblock(allocated_char_block_desc), bytes_init);
     EXPECT_EQ(*getrightsizeofblock(allocated_char_block_desc), bytes_init);
-    EXPECT_EQ(s_head, (desc_t*)ptr);
+    EXPECT_EQ(s_head, ptr);
 }
 
 TEST(memfree_Test, memfree_memfreeFreeBlockWhereLeftBlockIsFree_expectBlocksMerged) {
@@ -214,22 +214,22 @@ TEST(memfree_Test, memfree_memfreeFreeBlockWhereLeftBlockIsFree_expectBlocksMerg
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
     assert(bytes_init);
     // first block is free
-    desc_t* free_char_block_desc = (desc_t*)(ptr);
+    void* free_char_block_desc = ptr;
     s_head = free_char_block_desc;
-    free_char_block_desc->size = (int)sizeof(char) + memgetblocksize();
-    free_char_block_desc->next = CNULL;
-    *getrightsizeofblock(free_char_block_desc) = free_char_block_desc->size;
+    *getleftsizeofblock(free_char_block_desc) = (int)sizeof(char) + memgetblocksize();
+    *getblocknext(free_char_block_desc) = CNULL;
+    *getrightsizeofblock(free_char_block_desc) = *getleftsizeofblock(free_char_block_desc);
     // second block is allocated
-    desc_t* allocated_char_block_desc = (desc_t*)((char*)free_char_block_desc + myabs(free_char_block_desc->size));
-    allocated_char_block_desc->size = -((int)sizeof(char) + memgetblocksize()); // block allocated so its size is negative
-    allocated_char_block_desc->next = CNULL;
-    *getrightsizeofblock(allocated_char_block_desc) = allocated_char_block_desc->size;
+    void* allocated_char_block_desc = (void*)((char*)free_char_block_desc + myabs(*getleftsizeofblock(free_char_block_desc)));
+    *getleftsizeofblock(allocated_char_block_desc) = -((int)sizeof(char) + memgetblocksize()); // block is allocated so size is negative
+    *getblocknext(allocated_char_block_desc) = CNULL;
+    *getrightsizeofblock(allocated_char_block_desc) = *getleftsizeofblock(allocated_char_block_desc);
     // now freeing and expect memory state similar with state after meminit
-    void* user_ptr_to_allocated_block = (void*)(allocated_char_block_desc + 1);
+    void* user_ptr_to_allocated_block = (void*)((char*)allocated_char_block_desc + sizeof(int) + sizeof(void*));
     memfree(user_ptr_to_allocated_block);
-    EXPECT_EQ(free_char_block_desc->size, bytes_init);
+    EXPECT_EQ(*getleftsizeofblock(free_char_block_desc), bytes_init);
     EXPECT_EQ(*getrightsizeofblock(free_char_block_desc), bytes_init);
-    EXPECT_EQ(s_head, (desc_t*)ptr);
+    EXPECT_EQ(s_head, ptr);
 }
 
 TEST(memfree_Test, memfree_memfreeFreeBlockBetweenTwoFreeBlocks_expectBlocksMerged) {
@@ -239,26 +239,26 @@ TEST(memfree_Test, memfree_memfreeFreeBlockBetweenTwoFreeBlocks_expectBlocksMerg
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
     assert(bytes_init);
     // first block is free
-    desc_t* first_free_char_block_desc = (desc_t*)(ptr);
+    void* first_free_char_block_desc = ptr;
     s_head = first_free_char_block_desc;
-    first_free_char_block_desc->size = (int)sizeof(char) + memgetblocksize();
-    first_free_char_block_desc->next = CNULL;
-    *getrightsizeofblock(first_free_char_block_desc) = first_free_char_block_desc->size;
+    *getleftsizeofblock(first_free_char_block_desc) = (int)sizeof(char) + memgetblocksize();
+    *getblocknext(first_free_char_block_desc) = CNULL;
+    *getrightsizeofblock(first_free_char_block_desc) = *getleftsizeofblock(first_free_char_block_desc);
     // second block is allocated
-    desc_t* allocated_char_block_desc = (desc_t*)((char*)first_free_char_block_desc + myabs(first_free_char_block_desc->size));
-    allocated_char_block_desc->size = -((int)sizeof(char) + memgetblocksize()); // block allocated so its size is negative
-    allocated_char_block_desc->next = CNULL;
-    *getrightsizeofblock(allocated_char_block_desc) = allocated_char_block_desc->size;
+    void* allocated_char_block_desc = (void*)((char*)first_free_char_block_desc + myabs(*getleftsizeofblock(first_free_char_block_desc)));
+    *getleftsizeofblock(allocated_char_block_desc) = -((int)sizeof(char) + memgetblocksize()); // block allocated so its size is negative
+    *getblocknext(allocated_char_block_desc) = CNULL;
+    *getrightsizeofblock(allocated_char_block_desc) = *getleftsizeofblock(allocated_char_block_desc);
     // third block is free
-    desc_t* third_free_char_block_desc = (desc_t*)((char*)allocated_char_block_desc + myabs(allocated_char_block_desc->size));
-    third_free_char_block_desc->size = (int)sizeof(char) + memgetblocksize();
-    third_free_char_block_desc->next = CNULL;
-    *getrightsizeofblock(third_free_char_block_desc) = third_free_char_block_desc->size;
-    first_free_char_block_desc->next = third_free_char_block_desc;
+    void* third_free_char_block_desc = (void*)((char*)allocated_char_block_desc + myabs(*getleftsizeofblock(allocated_char_block_desc)));
+    *getleftsizeofblock(third_free_char_block_desc) = (int)sizeof(char) + memgetblocksize();
+    *getblocknext(third_free_char_block_desc) = CNULL;
+    *getrightsizeofblock(third_free_char_block_desc) = *getleftsizeofblock(third_free_char_block_desc);
+    *getblocknext(first_free_char_block_desc) = third_free_char_block_desc;
     // now freeing and expect memory state similar with state after meminit
-    void* user_ptr_to_allocated_block = (void*)(allocated_char_block_desc + 1);
+    void* user_ptr_to_allocated_block = (void*)((char*)allocated_char_block_desc + sizeof(int) + sizeof(void*));
     memfree(user_ptr_to_allocated_block);
-    EXPECT_EQ(first_free_char_block_desc->size, bytes_init);
+    EXPECT_EQ(*getleftsizeofblock(first_free_char_block_desc), bytes_init);
     EXPECT_EQ(*getrightsizeofblock(first_free_char_block_desc), bytes_init);
-    EXPECT_EQ(s_head, (desc_t*)ptr);
+    EXPECT_EQ(s_head, ptr);
 }
