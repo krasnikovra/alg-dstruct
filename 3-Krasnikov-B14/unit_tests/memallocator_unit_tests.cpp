@@ -1,6 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdlib.h>
-#include <assert.h>
 #include <string.h>
 #include "gtest/gtest.h"
 #include "../../lab2/memallocator.h"
@@ -14,9 +13,9 @@
 TEST(meminit_Test, meminit_meminit_expectValidBlockMarkup) {
     const int TEST_MEMORY_SIZE_INIT = memgetminimumsize() + 1;
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
-    assert(ptr);
+    ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    assert(bytes_init);
+    ASSERT_TRUE(bytes_init);
     void* desc = ptr;
     ASSERT_EQ(bytes_init, TEST_MEMORY_SIZE_INIT);
     ASSERT_EQ(*getleftsizeofblock(desc) , TEST_MEMORY_SIZE_INIT);
@@ -28,7 +27,7 @@ TEST(meminit_Test, meminit_meminit_expectValidBlockMarkup) {
 TEST(meminit_Test, meminit_meminitTooLittleBytes_expectZeroBytesInit) {
     const int TEST_MEMORY_SIZE_NOT_ENOUGH_TO_INIT = memgetminimumsize();
     void* ptr = malloc(TEST_MEMORY_SIZE_NOT_ENOUGH_TO_INIT);
-    assert(ptr);
+    ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_NOT_ENOUGH_TO_INIT);
     EXPECT_EQ(bytes_init, 0);
     free(ptr);
@@ -37,9 +36,9 @@ TEST(meminit_Test, meminit_meminitTooLittleBytes_expectZeroBytesInit) {
 TEST(memalloc_Test, memalloc_memallocAllInitMemory_expectSizeIsNegative) {
     const int TEST_MEMORY_SIZE_INIT = memgetminimumsize() + TEST_MEMORY_TEXT_BLOCK_SIZE;
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
-    assert(ptr);
+    ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    assert(bytes_init);
+    ASSERT_TRUE(bytes_init);
     void* desc = ptr;
     char* a = (char*)memalloc(TEST_MEMORY_TEXT_BLOCK_SIZE);
     EXPECT_EQ(bytes_init, TEST_MEMORY_SIZE_INIT);
@@ -53,9 +52,9 @@ TEST(memalloc_Test, memalloc_memallocAllInitMemoryWriteSmth_expectBlockInfoNotCo
     const int TEST_MEMORY_SIZE_INIT = memgetminimumsize() + TEST_MEMORY_TEXT_BLOCK_SIZE;
     const char sometext[TEST_MEMORY_TEXT_BLOCK_SIZE] = "abccbbfff";
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
-    assert(ptr);
+    ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    assert(bytes_init);
+    ASSERT_TRUE(bytes_init);
     void* desc = ptr;
     char* a = (char*)memalloc(TEST_MEMORY_TEXT_BLOCK_SIZE);
     // copying smth to *a not more than TEST_MEMORY_TEXT_BLOCK_SIZE so if smth goes wrong block info will be damaged
@@ -71,9 +70,9 @@ TEST(memalloc_Test, memalloc_memallocAllInitMemoryWriteSmth_expectBlockInfoNotCo
 TEST(memalloc_Test, memalloc_memallocAllInitMemoryNextMemallocFail_expectSecondMemallocReturnNull) {
     const int TEST_MEMORY_SIZE_INIT = memgetminimumsize() + TEST_MEMORY_TEXT_BLOCK_SIZE;
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
-    assert(ptr);
+    ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    assert(bytes_init);
+    ASSERT_TRUE(bytes_init);
     void* desc = ptr;
     char* a = (char*)memalloc(TEST_MEMORY_TEXT_BLOCK_SIZE);
     char* b = (char*)memalloc(TEST_MEMORY_TEXT_BLOCK_SIZE);
@@ -88,9 +87,9 @@ TEST(memalloc_Test, memalloc_memallocAllInitMemoryNextMemallocFail_expectSecondM
 TEST(memalloc_Test, memalloc_memallocInitTextBlockAndCharBlock_expectMemoryAllocedCorrect) {
     const int TEST_MEMORY_SIZE_INIT = memgetminimumsize() + TEST_MEMORY_TEXT_BLOCK_SIZE + memgetblocksize() + sizeof(char);
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
-    assert(ptr);
+    ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    assert(bytes_init);
+    ASSERT_TRUE(bytes_init);
     char* a_text = (char*)memalloc(TEST_MEMORY_TEXT_BLOCK_SIZE);
     char* b_char = (char*)memalloc(sizeof(char));
     void* desc_a = (void*)((char*)a_text - sizeof(int) - sizeof(void*));
@@ -110,9 +109,9 @@ TEST(memalloc_Test, memalloc_memallocInitTextBlockAndCharBlock_expectNoBlocksCor
     const char sometext[TEST_MEMORY_TEXT_BLOCK_SIZE] = "abccbbfff";
     const char b = 'b';
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
-    assert(ptr);
+    ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    assert(bytes_init);
+    ASSERT_TRUE(bytes_init);
     char* a_text = (char*)memalloc(TEST_MEMORY_TEXT_BLOCK_SIZE);
     char* b_char = (char*)memalloc(sizeof(char));
     void* desc_a = (void*)((char*)a_text - sizeof(int) - sizeof(void*));
@@ -136,9 +135,9 @@ TEST(memalloc_Test, memalloc_memallocAllocatingBestFitBlock_expectOneByteBlockFo
     const char sometext[TEST_MEMORY_TEXT_BLOCK_SIZE] = "abccbbfff";
     const char b = 'b';
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
-    assert(ptr);
+    ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    assert(bytes_init);
+    ASSERT_TRUE(bytes_init);
     // making a memory markup which is: free TEST_MEMORY_TEXT_BLOCK_SIZE block - allocated char block - free char block
     // expect that memalloc returns pointer to a free char block for memalloc(sizeof(char))
     // first free text block
@@ -168,9 +167,9 @@ TEST(memalloc_Test, memalloc_memallocAllocatingBestFitBlock_expectOneByteBlockFo
 TEST(memfree_Test, memfree_memfreeFreeOneBlock_expectSizeIsPositive) {
     const int TEST_MEMORY_SIZE_INIT = memgetminimumsize() + sizeof(char);
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
-    assert(ptr);
+    ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    assert(bytes_init);
+    ASSERT_TRUE(bytes_init);
     // making all init memory allocated block
     void* all_init_memory_block_desc = ptr;
     *getleftsizeofblock(all_init_memory_block_desc) = -*getleftsizeofblock(all_init_memory_block_desc);
@@ -187,9 +186,9 @@ TEST(memfree_Test, memfree_memfreeFreeOneBlock_expectSizeIsPositive) {
 TEST(memfree_Test, memfree_memfreeFreeBlockWhereRightBlockIsFree_expectBlocksMerged) {
     const int TEST_MEMORY_SIZE_INIT = memgetminimumsize() + memgetblocksize() + 2 * sizeof(char);
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
-    assert(ptr);
+    ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    assert(bytes_init);
+    ASSERT_TRUE(bytes_init);
     // first block is allocated
     void* allocated_char_block_desc = ptr;
     *getleftsizeofblock(allocated_char_block_desc) = -((int)sizeof(char) + memgetblocksize()); // block is allocated so size is negative
@@ -213,9 +212,9 @@ TEST(memfree_Test, memfree_memfreeFreeBlockWhereRightBlockIsFree_expectBlocksMer
 TEST(memfree_Test, memfree_memfreeFreeBlockWhereLeftBlockIsFree_expectBlocksMerged) {
     const int TEST_MEMORY_SIZE_INIT = memgetminimumsize() + memgetblocksize() + 2 * sizeof(char);
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
-    assert(ptr);
+    ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    assert(bytes_init);
+    ASSERT_TRUE(bytes_init);
     // first block is free
     void* free_char_block_desc = ptr;
     g_head = free_char_block_desc;
@@ -239,9 +238,9 @@ TEST(memfree_Test, memfree_memfreeFreeBlockWhereLeftBlockIsFree_expectBlocksMerg
 TEST(memfree_Test, memfree_memfreeFreeBlockBetweenTwoFreeBlocks_expectBlocksMerged) {
     const int TEST_MEMORY_SIZE_INIT = memgetminimumsize() + 2 * memgetblocksize() + 3 * sizeof(char);
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
-    assert(ptr);
+    ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    assert(bytes_init);
+    ASSERT_TRUE(bytes_init);
     // first block is free
     void* first_free_char_block_desc = ptr;
     g_head = first_free_char_block_desc;
@@ -278,11 +277,11 @@ TEST(memallocator_StressTest, memalloc_manyBlocksAllocAndFree_expectMemoryStateS
     const int TEST_MEMORY_SIZE = TEST_BLOCKS_COUNT * TEST_BLOCK_SIZE;
     const int TEST_MEMORY_SIZE_INIT = TEST_BLOCKS_COUNT * (TEST_BLOCK_SIZE + memgetblocksize());
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
-    assert(ptr);
+    ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    assert(bytes_init);
+    ASSERT_TRUE(bytes_init);
     void** blocks = (void**)malloc(TEST_BLOCKS_COUNT * sizeof(void*));
-    assert(blocks);
+    ASSERT_TRUE(blocks);
     for (int i = 0; i < TEST_BLOCKS_COUNT; i++) {
         blocks[i] = (char*)memalloc(TEST_BLOCK_SIZE);
     }
@@ -311,11 +310,11 @@ TEST(memallocator_StressTest, memalloc_manyRandomBlocksAllocAndFree_expectMemory
     const int TEST_MEMORY_SIZE = TEST_BLOCKS_COUNT * TEST_BLOCK_SIZE;
     const int TEST_MEMORY_SIZE_INIT = TEST_BLOCKS_COUNT * (TEST_BLOCK_SIZE + memgetblocksize());
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
-    assert(ptr);
+    ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    assert(bytes_init);
+    ASSERT_TRUE(bytes_init);
     void** blocks = (void**)malloc(TEST_BLOCKS_COUNT * sizeof(void*));
-    assert(blocks);
+    ASSERT_TRUE(blocks);
     for (int i = 0; i < TEST_BLOCKS_COUNT; i++) {
         blocks[i] = (char*)memalloc(rand() % TEST_BLOCK_SIZE + 1);
     }
