@@ -10,7 +10,7 @@ int* getrightsizeofblock(void* desc);
 int* getleftsizeofblock(void* desc);
 void** getblocknext(void* desc);
 
-extern void* s_head;
+extern void* g_head;
 
 #ifdef __cplusplus
 }

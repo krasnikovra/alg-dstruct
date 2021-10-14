@@ -2,7 +2,7 @@
 #include "../../lab2/memallocator.h"
 #include "../include/memalloc_utils.h"
 
-void* s_head = NULL;
+void* g_head = NULL;
 void* s_pmemory = NULL;
 int s_size = 0;
 
@@ -30,7 +30,7 @@ int meminit(void* pMemory, int size) {
     *getleftsizeofblock(desc) = size;
     *getblocknext(desc) = NULL;
     *getrightsizeofblock(desc) = size;
-    s_head = desc;
+    g_head = desc;
     s_pmemory = pMemory;
     s_size = size;
     return size;
@@ -52,7 +52,7 @@ void* memalloc(int size) {
     // searching for the best fit block
     int block_found = 0;
     void* iter_prev = NULL;
-    void* iter = s_head;
+    void* iter = g_head;
     void* bestfit = iter; // descriptor of best fit block
     void* bestfit_prev = NULL;
     while (iter) {
@@ -78,7 +78,7 @@ void* memalloc(int size) {
         if (bestfit_prev)
             *getblocknext(bestfit_prev) = free_block_desc;
         else
-            s_head = free_block_desc;
+            g_head = free_block_desc;
         // allocating memory for user
         *getleftsizeofblock(bestfit) = memgetblocksize() + size;
     }
@@ -86,7 +86,7 @@ void* memalloc(int size) {
         if (bestfit_prev)
             *getblocknext(bestfit_prev) = *getblocknext(bestfit);
         else
-            s_head = *getblocknext(bestfit);
+            g_head = *getblocknext(bestfit);
     }
     *getleftsizeofblock(bestfit) = -*getleftsizeofblock(bestfit); // if block is allocated for user its size is negative
     *getrightsizeofblock(bestfit) = *getleftsizeofblock(bestfit);
@@ -99,8 +99,8 @@ void memfree(void* p) {
     void* pdesc = (void*)((char*)p - sizeof(void*) - sizeof(int));
     *getleftsizeofblock(pdesc) = -*getleftsizeofblock(pdesc); // converting size to positive which means block is not allocated for user now
     *getrightsizeofblock(pdesc) = *getleftsizeofblock(pdesc);
-    *getblocknext(pdesc) = s_head;
-    s_head = pdesc;
+    *getblocknext(pdesc) = g_head;
+    g_head = pdesc;
     // anti-fragmentation feauture: if we have free block in the right of freed we need to merge them in one block
     void* right_block_desc = (void*)((char*)pdesc + *getleftsizeofblock(pdesc));
     // if we have any block to the right side
@@ -108,8 +108,8 @@ void memfree(void* p) {
         // and this block is free
         if (*getleftsizeofblock(right_block_desc) > 0) {
             // search to the right_block_desc_prev in free space list
-            void* right_block_desc_prev = s_head;
-            void* iter = s_head;
+            void* right_block_desc_prev = g_head;
+            void* iter = g_head;
             while (iter) {
                 if (*getblocknext(iter) == right_block_desc) {
                     right_block_desc_prev = iter;
@@ -130,8 +130,8 @@ void memfree(void* p) {
         // if this block is free
         if (*getleftsizeofblock(left_block_desc) > 0) {
             // search to the left_block_desc_prev in free space list
-            void* left_block_desc_prev = s_head;
-            void* iter = s_head;
+            void* left_block_desc_prev = g_head;
+            void* iter = g_head;
             while (iter) {
                 if (*getblocknext(iter) == left_block_desc) {
                     left_block_desc_prev = iter;
@@ -142,8 +142,8 @@ void memfree(void* p) {
             // skipping left_block_desc in free space list as it will be merged with pdesc
             *getblocknext(left_block_desc_prev) = *getblocknext(left_block_desc);
             // left_block_desc is new head as pdesc was merged into it
-            s_head = left_block_desc;
-            *getblocknext(s_head) = *getblocknext(pdesc);
+            g_head = left_block_desc;
+            *getblocknext(g_head) = *getblocknext(pdesc);
             // updating size
             *getleftsizeofblock(left_block_desc) += *getleftsizeofblock(pdesc);
             *getrightsizeofblock(left_block_desc) = *getleftsizeofblock(left_block_desc);
