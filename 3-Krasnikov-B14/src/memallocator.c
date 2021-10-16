@@ -47,7 +47,7 @@ void memdone() {
 }
 
 void* memalloc(int size) {
-    if (size < 1)
+    if (size < 1 || size > s_size - memgetblocksize())
         return NULL;
     // searching for the best fit block
     int block_found = 0;
@@ -97,16 +97,30 @@ void* memalloc(int size) {
 
 void memfree(void* p) {
     void* pdesc = (void*)((char*)p - sizeof(void*) - sizeof(int));
-    *getleftsizeofblock(pdesc) = -*getleftsizeofblock(pdesc); // converting size to positive which means block is not allocated for user now
+    void* left_block_desc = NULL;
+    if ((char*)pdesc - 1 > (char*)s_pmemory)
+        left_block_desc = (void*)((char*)pdesc - myabs(*((int*)pdesc - 1)));
+    void* right_block_desc = (void*)(getrightsizeofblock(pdesc) + 1);
+    char merged_with_left = 0, merged_with_right = 0;
+
+    *getleftsizeofblock(pdesc) = -*getleftsizeofblock(pdesc);
     *getrightsizeofblock(pdesc) = *getleftsizeofblock(pdesc);
-    *getblocknext(pdesc) = g_head;
-    g_head = pdesc;
-    // anti-fragmentation feauture: if we have free block in the right of freed we need to merge them in one block
-    void* right_block_desc = (void*)((char*)pdesc + *getleftsizeofblock(pdesc));
-    // if we have any block to the right side
+
+    if (left_block_desc >= s_pmemory)
+        if (*getleftsizeofblock(left_block_desc) > 0) {
+            merged_with_left = 1;
+            *getleftsizeofblock(left_block_desc) += *getleftsizeofblock(pdesc);
+            *getrightsizeofblock(left_block_desc) = *getleftsizeofblock(left_block_desc);
+            pdesc = left_block_desc;
+        }
+
     if ((char*)right_block_desc < (char*)s_pmemory + s_size)
-        // and this block is free
         if (*getleftsizeofblock(right_block_desc) > 0) {
+            merged_with_right = 1;
+            if (!merged_with_left) {
+                *getblocknext(pdesc) = g_head;
+                g_head = pdesc;
+            }
             // search to the right_block_desc_prev in free space list
             void* right_block_desc_prev = g_head;
             void* iter = g_head;
@@ -117,37 +131,19 @@ void memfree(void* p) {
                 }
                 iter = *getblocknext(iter);
             }
-            // skipping right_block_desc in free space list as it will be merged with pdesc
-            *getblocknext(right_block_desc_prev) = *getblocknext(right_block_desc);
+            if (right_block_desc_prev != right_block_desc)
+                // skipping right_block_desc in free space list as it will be merged with pdesc
+                *getblocknext(right_block_desc_prev) = *getblocknext(right_block_desc);
+            else
+                g_head = *getblocknext(right_block_desc);
+            // updating size
             *getleftsizeofblock(pdesc) += *getleftsizeofblock(right_block_desc);
             *getrightsizeofblock(pdesc) = *getleftsizeofblock(pdesc);
         }
-    // anti-fragmentation feauture: if we have free block in the left of freed we need to merge them in one block
-    // go backwards for one byte to check if we are on the edge of memory or have any block to the left
-    if ((char*)pdesc - 1 > (char*)s_pmemory) {
-        int left_block_size = *(int*)((char*)pdesc - sizeof(int));
-        void* left_block_desc = (void*)((char*)pdesc - myabs(left_block_size));
-        // if this block is free
-        if (*getleftsizeofblock(left_block_desc) > 0) {
-            // search to the left_block_desc_prev in free space list
-            void* left_block_desc_prev = g_head;
-            void* iter = g_head;
-            while (iter) {
-                if (*getblocknext(iter) == left_block_desc) {
-                    left_block_desc_prev = iter;
-                    break;
-                }
-                iter = *getblocknext(iter);
-            }
-            // skipping left_block_desc in free space list as it will be merged with pdesc
-            *getblocknext(left_block_desc_prev) = *getblocknext(left_block_desc);
-            // left_block_desc is new head as pdesc was merged into it
-            g_head = left_block_desc;
-            *getblocknext(g_head) = *getblocknext(pdesc);
-            // updating size
-            *getleftsizeofblock(left_block_desc) += *getleftsizeofblock(pdesc);
-            *getrightsizeofblock(left_block_desc) = *getleftsizeofblock(left_block_desc);
-        }
+
+    if (!merged_with_left && !merged_with_right) {
+        *getblocknext(pdesc) = g_head;
+        g_head = pdesc;
     }
 }
 
