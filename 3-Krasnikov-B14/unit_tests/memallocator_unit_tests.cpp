@@ -174,11 +174,13 @@ TEST(memfree_Test, memfree_memfreeFreeOneBlock_expectSizeIsPositive) {
     *getleftsizeofblock(all_init_memory_block_desc) = -*getleftsizeofblock(all_init_memory_block_desc);
     *getblocknext(all_init_memory_block_desc) = nullptr;
     *getrightsizeofblock(all_init_memory_block_desc) = *getleftsizeofblock(all_init_memory_block_desc);
+    g_head = nullptr;
     // freeing this block
     void* user_ptr_to_block = (void*)((char*)all_init_memory_block_desc + sizeof(int) + sizeof(void*));
     memfree(user_ptr_to_block);
     EXPECT_EQ(*getleftsizeofblock(all_init_memory_block_desc), myabs(*getleftsizeofblock(all_init_memory_block_desc)));
     EXPECT_EQ(*getrightsizeofblock(all_init_memory_block_desc), myabs(*getrightsizeofblock(all_init_memory_block_desc)));
+    EXPECT_EQ(g_head, ptr);
     free(ptr);
 }
 
@@ -262,9 +264,40 @@ TEST(memfree_Test, memfree_memfreeFreeBlockBetweenTwoFreeBlocks_expectBlocksMerg
     memfree(user_ptr_to_allocated_block);
     EXPECT_EQ(*getleftsizeofblock(first_free_char_block_desc), bytes_init);
     EXPECT_EQ(*getrightsizeofblock(first_free_char_block_desc), bytes_init);
+    EXPECT_EQ(*getblocknext(first_free_char_block_desc), nullptr);
     EXPECT_EQ(g_head, ptr);
     free(ptr);
 }
+
+//-----------------------------------------------------------------------------------------------------------
+// FUNCTIONAL TESTS
+//-----------------------------------------------------------------------------------------------------------
+TEST(memalloc_FuncTest, memalloc_gheadSizeLessThenAskedToMalloc_expectRightBestfitBlock) {
+    const int TEST_MEMORY_SIZE_INIT = 3 * memgetblocksize() + 1 + 5 + 5;
+    void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
+    ASSERT_TRUE(ptr);
+    int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
+    ASSERT_TRUE(bytes_init);
+    char* a = (char*)memalloc(5);
+    char* b = (char*)memalloc(5);
+    char* c = (char*)memalloc(1);
+    EXPECT_TRUE(a);
+    EXPECT_TRUE(b);
+    EXPECT_TRUE(c);
+    memfree(a);
+    memfree(c);
+    char* d = (char*)memalloc(5); // here we could get 1-byte block with memalloc error
+    c = (char*)memalloc(1);
+    EXPECT_TRUE(d);
+    EXPECT_TRUE(c);
+    EXPECT_TRUE(d == a);
+    memfree(d);
+    memfree(b);
+    memfree(c);
+    memdone();
+    free(ptr);
+}
+
 
 //------------------------------------------------------------------------------------------------------------
 // STRESS TESTS
@@ -307,7 +340,7 @@ TEST(memallocator_StressTest, memalloc_manyBlocksAllocAndFree_expectMemoryStateS
 TEST(memallocator_StressTest, memalloc_manyRandomBlocksAllocAndFree_expectMemoryStateSimilarToAfterInit) {
     const int TEST_BLOCK_SIZE = 16;
     const int TEST_MEMORY_SIZE = TEST_BLOCKS_COUNT * TEST_BLOCK_SIZE;
-    const int TEST_MEMORY_SIZE_INIT = TEST_BLOCKS_COUNT * (TEST_BLOCK_SIZE + memgetblocksize());
+    const int TEST_MEMORY_SIZE_INIT = 2 * TEST_BLOCKS_COUNT * (TEST_BLOCK_SIZE + memgetblocksize()); //multiplied by 2 so fragmentation will not fail the test
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
     ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
