@@ -14,7 +14,10 @@ TEST(meminit_Test, meminit_meminit_expectValidBlockMarkup) {
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
     ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    ASSERT_TRUE(bytes_init);
+    if (!bytes_init) {
+        free(ptr);
+        ASSERT_TRUE(bytes_init);
+    }
     void* desc = ptr;
     ASSERT_EQ(bytes_init, TEST_MEMORY_SIZE_INIT);
     ASSERT_EQ(*getleftsizeofblock(desc) , TEST_MEMORY_SIZE_INIT);
@@ -37,7 +40,10 @@ TEST(memalloc_Test, memalloc_memallocAllInitMemory_expectSizeIsNegative) {
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
     ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    ASSERT_TRUE(bytes_init);
+    if (!bytes_init) {
+        free(ptr);
+        ASSERT_TRUE(bytes_init);
+    }
     void* desc = ptr;
     char* a = (char*)memalloc(TEST_MEMORY_TEXT_BLOCK_SIZE);
     EXPECT_EQ(bytes_init, TEST_MEMORY_SIZE_INIT);
@@ -53,7 +59,10 @@ TEST(memalloc_Test, memalloc_memallocAllInitMemoryWriteSmth_expectBlockInfoNotCo
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
     ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    ASSERT_TRUE(bytes_init);
+    if (!bytes_init) {
+        free(ptr);
+        ASSERT_TRUE(bytes_init);
+    }
     void* desc = ptr;
     char* a = (char*)memalloc(TEST_MEMORY_TEXT_BLOCK_SIZE);
     // copying smth to *a not more than TEST_MEMORY_TEXT_BLOCK_SIZE so if smth goes wrong block info will be damaged
@@ -71,7 +80,10 @@ TEST(memalloc_Test, memalloc_memallocAllInitMemoryNextMemallocFail_expectSecondM
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
     ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    ASSERT_TRUE(bytes_init);
+    if (!bytes_init) {
+        free(ptr);
+        ASSERT_TRUE(bytes_init);
+    }
     void* desc = ptr;
     char* a = (char*)memalloc(TEST_MEMORY_TEXT_BLOCK_SIZE);
     char* b = (char*)memalloc(TEST_MEMORY_TEXT_BLOCK_SIZE);
@@ -88,7 +100,10 @@ TEST(memalloc_Test, memalloc_memallocInitTextBlockAndCharBlock_expectMemoryAlloc
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
     ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    ASSERT_TRUE(bytes_init);
+    if (!bytes_init) {
+        free(ptr);
+        ASSERT_TRUE(bytes_init);
+    }
     char* a_text = (char*)memalloc(TEST_MEMORY_TEXT_BLOCK_SIZE);
     char* b_char = (char*)memalloc(sizeof(char));
     void* desc_a = (void*)((char*)a_text - sizeof(int) - sizeof(void*));
@@ -110,7 +125,10 @@ TEST(memalloc_Test, memalloc_memallocInitTextBlockAndCharBlock_expectNoBlocksCor
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
     ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    ASSERT_TRUE(bytes_init);
+    if (!bytes_init) {
+        free(ptr);
+        ASSERT_TRUE(bytes_init);
+    }
     char* a_text = (char*)memalloc(TEST_MEMORY_TEXT_BLOCK_SIZE);
     char* b_char = (char*)memalloc(sizeof(char));
     void* desc_a = (void*)((char*)a_text - sizeof(int) - sizeof(void*));
@@ -136,7 +154,10 @@ TEST(memalloc_Test, memalloc_memallocAllocatingBestFitBlock_expectOneByteBlockFo
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
     ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    ASSERT_TRUE(bytes_init);
+    if (!bytes_init) {
+        free(ptr);
+        ASSERT_TRUE(bytes_init);
+    }
     // making a memory markup which is: free TEST_MEMORY_TEXT_BLOCK_SIZE block - allocated char block - free char block
     // expect that memalloc returns pointer to a free char block for memalloc(sizeof(char))
     // first free text block
@@ -168,7 +189,10 @@ TEST(memfree_Test, memfree_memfreeFreeOneBlock_expectSizeIsPositive) {
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
     ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    ASSERT_TRUE(bytes_init);
+    if (!bytes_init) {
+        free(ptr);
+        ASSERT_TRUE(bytes_init);
+    }
     // making all init memory allocated block
     void* all_init_memory_block_desc = ptr;
     *getleftsizeofblock(all_init_memory_block_desc) = -*getleftsizeofblock(all_init_memory_block_desc);
@@ -189,7 +213,10 @@ TEST(memfree_Test, memfree_memfreeFreeBlockWhereRightBlockIsFree_expectBlocksMer
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
     ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    ASSERT_TRUE(bytes_init);
+    if (!bytes_init) {
+        free(ptr);
+        ASSERT_TRUE(bytes_init);
+    }
     // first block is allocated
     void* allocated_char_block_desc = ptr;
     *getleftsizeofblock(allocated_char_block_desc) = -((int)sizeof(char) + memgetblocksize()); // block is allocated so size is negative
@@ -215,7 +242,10 @@ TEST(memfree_Test, memfree_memfreeFreeBlockWhereLeftBlockIsFree_expectBlocksMerg
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
     ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    ASSERT_TRUE(bytes_init);
+    if (!bytes_init) {
+        free(ptr);
+        ASSERT_TRUE(bytes_init);
+    }
     // first block is free
     void* free_char_block_desc = ptr;
     g_head = free_char_block_desc;
@@ -241,7 +271,10 @@ TEST(memfree_Test, memfree_memfreeFreeBlockBetweenTwoFreeBlocks_expectBlocksMerg
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
     ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    ASSERT_TRUE(bytes_init);
+    if (!bytes_init) {
+        free(ptr);
+        ASSERT_TRUE(bytes_init);
+    }
     // first block is free
     void* first_free_char_block_desc = ptr;
     g_head = first_free_char_block_desc;
@@ -277,7 +310,10 @@ TEST(memalloc_FuncTest, memalloc_gheadSizeLessThenAskedToMalloc_expectRightBestf
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
     ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    ASSERT_TRUE(bytes_init);
+    if (!bytes_init) {
+        free(ptr);
+        ASSERT_TRUE(bytes_init);
+    }
     char* a = (char*)memalloc(5);
     char* b = (char*)memalloc(5);
     char* c = (char*)memalloc(1);
@@ -298,7 +334,6 @@ TEST(memalloc_FuncTest, memalloc_gheadSizeLessThenAskedToMalloc_expectRightBestf
     free(ptr);
 }
 
-
 //------------------------------------------------------------------------------------------------------------
 // STRESS TESTS
 //------------------------------------------------------------------------------------------------------------
@@ -311,9 +346,15 @@ TEST(memallocator_StressTest, memalloc_manyBlocksAllocAndFree_expectMemoryStateS
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
     ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    ASSERT_TRUE(bytes_init);
+    if (!bytes_init) {
+        free(ptr);
+        ASSERT_TRUE(bytes_init);
+    }
     void** blocks = (void**)malloc(TEST_BLOCKS_COUNT * sizeof(void*));
-    ASSERT_TRUE(blocks);
+    if (!blocks) {
+        free(ptr);
+        ASSERT_TRUE(blocks);
+    }
     for (int i = 0; i < TEST_BLOCKS_COUNT; i++) {
         blocks[i] = (char*)memalloc(TEST_BLOCK_SIZE);
     }
@@ -344,9 +385,15 @@ TEST(memallocator_StressTest, memalloc_manyRandomBlocksAllocAndFree_expectMemory
     void* ptr = malloc(TEST_MEMORY_SIZE_INIT);
     ASSERT_TRUE(ptr);
     int bytes_init = meminit(ptr, TEST_MEMORY_SIZE_INIT);
-    ASSERT_TRUE(bytes_init);
+    if (!bytes_init) {
+        free(ptr);
+        ASSERT_TRUE(bytes_init);
+    }
     void** blocks = (void**)malloc(TEST_BLOCKS_COUNT * sizeof(void*));
-    ASSERT_TRUE(blocks);
+    if (!blocks) {
+        free(ptr);
+        ASSERT_TRUE(blocks);
+    }
     for (int i = 0; i < TEST_BLOCKS_COUNT; i++) {
         blocks[i] = (char*)memalloc(rand() % TEST_BLOCK_SIZE + 1);
     }
