@@ -22,14 +22,6 @@ int* getrightsizeofblock(void* desc) {
     return (int*)((char*)desc + myabs(*getleftsizeofblock(desc)) - sizeof(int));
 }
 
-int memgetminimumsize() {
-    return sizeof(int) + sizeof(void*) + sizeof(int);
-}
-
-int memgetblocksize() {
-    return sizeof(int) + sizeof(void*) + sizeof(int); // block have last 4 bytes as its size to realize left-side merging anti-fragmentation feature
-}
-
 int meminit(void* pMemory, int size) {
     // 0 byte block should not be available to init similar to memalloc behaviour 
     if (size <= memgetminimumsize())
@@ -62,13 +54,15 @@ void* memalloc(int size) {
     void* iter_prev = NULL;
     void* iter = g_head;
     void* bestfit = iter; // descriptor of best fit block
+    int bestfit_size = s_size + 1;
     void* bestfit_prev = NULL;
     while (iter) {
         if (*getleftsizeofblock(iter) >= memgetblocksize() + size) {
             block_found = 1;
-            if (*getleftsizeofblock(iter) < *getleftsizeofblock(bestfit)) {
+            if (*getleftsizeofblock(iter) < bestfit_size) {
                 bestfit = iter;
                 bestfit_prev = iter_prev;
+                bestfit_size = *getleftsizeofblock(bestfit);
             }
         }
         iter_prev = iter;
@@ -154,3 +148,12 @@ void memfree(void* p) {
         g_head = pdesc;
     }
 }
+
+int memgetminimumsize() {
+    return sizeof(int) + sizeof(void*) + sizeof(int);
+}
+
+int memgetblocksize() {
+    return sizeof(int) + sizeof(void*) + sizeof(int); // block have last 4 bytes as its size to realize left-side merging anti-fragmentation feature
+}
+

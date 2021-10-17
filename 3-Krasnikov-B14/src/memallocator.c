@@ -54,13 +54,15 @@ void* memalloc(int size) {
     void* iter_prev = NULL;
     void* iter = g_head;
     void* bestfit = iter; // descriptor of best fit block
+    int bestfit_size = s_size + 1;
     void* bestfit_prev = NULL;
     while (iter) {
         if (*getleftsizeofblock(iter) >= memgetblocksize() + size) {
             block_found = 1;
-            if (*getleftsizeofblock(iter) < *getleftsizeofblock(bestfit)) {
+            if (*getleftsizeofblock(iter) < bestfit_size) {
                 bestfit = iter;
                 bestfit_prev = iter_prev;
+                bestfit_size = *getleftsizeofblock(bestfit);
             }
         }
         iter_prev = iter;
