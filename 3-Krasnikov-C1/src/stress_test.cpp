@@ -46,26 +46,29 @@ TEST(LabSolution_StressTest, LabSolutionGraphGenerating) {
 TEST(LabSolution_StressTest, LabSolutionMainStressTest) {
     const char* filenameOutput = "Output.txt";
     bool depthFirstTraversalResult = false;
-
     FILE* fileGraph = fopen(filenameGraph, "r");
     if (!fileGraph) {
         printf("Error while opening %s file!\n", filenameGraph);
         ASSERT_TRUE(fileGraph);
     }
-    FILE* fileOutput = fopen(filenameOutput, "w");
-    if (!fileOutput) {
-        printf("Error while opening %s file!\n", filenameOutput);
-        ASSERT_TRUE(fileOutput);
-    }
     AdjacencyList* graph = AdjacencyListReadFromStream(fileGraph);
+    fclose(fileGraph);
     if (!graph) {
         printf("Failed to read graph!\n");
         ASSERT_TRUE(graph);
     }
+    FILE* fileOutput = fopen(filenameOutput, "w");
+    if (!fileOutput) {
+        AdjacencyListDestroy(graph);
+        printf("Error while opening %s file!\n", filenameOutput);
+        ASSERT_TRUE(fileOutput);
+    }
     depthFirstTraversalResult = DepthFirstTraversalIterative(fileOutput, graph, 0);
     if (!depthFirstTraversalResult) {
+        AdjacencyListDestroy(graph);
         printf("Memory allocation failed while DepthFirstTraversalIterative!");
         ASSERT_TRUE(depthFirstTraversalResult);
     }
+    fclose(fileOutput);
     AdjacencyListDestroy(graph);
 }
