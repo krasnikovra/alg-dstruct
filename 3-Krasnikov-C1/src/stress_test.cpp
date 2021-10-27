@@ -65,6 +65,7 @@ TEST(LabSolution_StressTest, LabSolutionMainStressTest) {
     }
     depthFirstTraversalResult = DepthFirstTraversalIterative(fileOutput, graph, 0);
     if (!depthFirstTraversalResult) {
+        fclose(fileOutput);
         AdjacencyListDestroy(graph);
         printf("Memory allocation failed while DepthFirstTraversalIterative!");
         ASSERT_TRUE(depthFirstTraversalResult);
