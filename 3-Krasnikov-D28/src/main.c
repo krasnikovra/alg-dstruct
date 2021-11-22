@@ -148,12 +148,11 @@ void FindBestSolution(int m) {
         }
     if (m < g_wagonsCount)
         for (int i = 0; i < g_wagonsCount; i++) {
-            if (!g_wagonsRestricted[i] && !g_wagonsUsed[i]) {
+            if (!g_wagonsRestricted[i] && !g_wagonsUsed[i] && g_curTime + g_wagonsTimes[i] <= g_timeBeforeDeparture) {
                 g_curSolution[m] = i;
                 g_curTime += g_wagonsTimes[i];
                 CompressSearchSpace(i);
-                if (g_curTime <= g_timeBeforeDeparture)
-                    FindBestSolution(m + 1);
+                FindBestSolution(m + 1);
                 DecompressSearchSpace(i);
                 g_curTime -= g_wagonsTimes[i];
             }
