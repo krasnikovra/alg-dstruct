@@ -3,5 +3,5 @@
 *vcxproj*
 **Debug
 **Release
-*txt
+**/output.txt
 *googletest
