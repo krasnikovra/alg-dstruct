@@ -17,15 +17,15 @@ int ReadOutputData(const char* filenameOut, int* solution, int size) {
 
 #define MAX_WAGONS_COUNT_IN_FUNC_TEST 10
 
-inline void TestSuite(const char* filenameIn, const char* filenameOut, const char* filenameCorrectOut) {
+void TestSuite(const char* filenameIn, const char* filenameOut, const char* filenameCorrectOut) {
 	int distWagError = DistributeWagons(
 		filenameIn,
 		filenameOut
 	);
 	if (!distWagError) {
 		int solution[MAX_WAGONS_COUNT_IN_FUNC_TEST], correct_solution[MAX_WAGONS_COUNT_IN_FUNC_TEST];
-		ReadOutputData(filenameOut, solution, MAX_WAGONS_COUNT_IN_FUNC_TEST);
-		ReadOutputData(filenameCorrectOut, correct_solution, MAX_WAGONS_COUNT_IN_FUNC_TEST);
+		ASSERT_TRUE(ReadOutputData(filenameOut, solution, MAX_WAGONS_COUNT_IN_FUNC_TEST));
+		ASSERT_TRUE(ReadOutputData(filenameCorrectOut, correct_solution, MAX_WAGONS_COUNT_IN_FUNC_TEST));
 		EXPECT_TRUE(!memcmp(solution, correct_solution, MAX_WAGONS_COUNT_IN_FUNC_TEST * sizeof(int)));
 	}
 	else {
