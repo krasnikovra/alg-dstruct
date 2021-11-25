@@ -10,10 +10,9 @@ int ReadOutputData(const char* filenameOut, int* solution, int size) {
 	FILE* fileOut = fopen(filenameOut, "r");
 	if (!fileOut)
 		return 0;
-	for (int i = 0; i < size; i++) {
+	for (int i = 0; i < size; i++) 
 		if (!fscanf(fileOut, "%d", &solution[i]))
 			break;
-	}
 	fclose(fileOut);
 	return 1;
 }
@@ -31,9 +30,8 @@ void TestSuite(const char* filenameIn, const char* filenameOut, const char* file
 		ASSERT_TRUE(ReadOutputData(filenameCorrectOut, correct_solution, MAX_WAGONS_COUNT_IN_FUNC_TEST));
 		EXPECT_TRUE(!memcmp(solution, correct_solution, MAX_WAGONS_COUNT_IN_FUNC_TEST * sizeof(int)));
 	}
-	else {
+	else
 		ASSERT_TRUE(!distWagError);
-	}
 }
 
 class FunctionalTest : public ::testing::Test {

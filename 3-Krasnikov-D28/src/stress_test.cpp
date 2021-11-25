@@ -31,9 +31,8 @@ TEST(StressTest, GenerateInputTest) {
     FILE* fileInput = fopen(STRESS_TEST_INPUT, "w");
     ASSERT_TRUE(fileInput);
     fprintf(fileInput, "%d %d %d\n", WAGONS_COUNT, TIME_BEFORE_DEPARTURE, MAX_WAGONS_LEFT);
-    for (int i = 0; i < WAGONS_COUNT; i++) {
+    for (int i = 0; i < WAGONS_COUNT; i++)
         fprintf(fileInput, "%d ", (rand() % (TIME_BEFORE_DEPARTURE / WAGONS_COUNT - 1) + 1));
-    }
     fprintf(fileInput, "\n");
     int orderCondsCount = WAGONS_COUNT / ORDERS_COND_DIVIDER;
     int beforeDelta = orderCondsCount > 0 ? WAGONS_COUNT / orderCondsCount - 1 : 0;
