@@ -4,6 +4,7 @@
 #include "..\include\lab_solution.h"
 
 #define MAX_WAGONS_COUNT_IN_FUNC_TEST 10
+#define SOME_GARBAGE_BYTE 0xAF
 
 int ReadOutputData(const char* filenameOut, int* solution, int size) {
 	FILE* fileOut = fopen(filenameOut, "r");
@@ -24,6 +25,8 @@ void TestSuite(const char* filenameIn, const char* filenameOut, const char* file
 	);
 	if (!distWagError) {
 		int solution[MAX_WAGONS_COUNT_IN_FUNC_TEST] = { 0 }, correct_solution[MAX_WAGONS_COUNT_IN_FUNC_TEST] = { 0 };
+		memset(solution, SOME_GARBAGE_BYTE, MAX_WAGONS_COUNT_IN_FUNC_TEST * sizeof(int));
+		memset(correct_solution, SOME_GARBAGE_BYTE, MAX_WAGONS_COUNT_IN_FUNC_TEST * sizeof(int));
 		ASSERT_TRUE(ReadOutputData(filenameOut, solution, MAX_WAGONS_COUNT_IN_FUNC_TEST));
 		ASSERT_TRUE(ReadOutputData(filenameCorrectOut, correct_solution, MAX_WAGONS_COUNT_IN_FUNC_TEST));
 		EXPECT_TRUE(!memcmp(solution, correct_solution, MAX_WAGONS_COUNT_IN_FUNC_TEST * sizeof(int)));
