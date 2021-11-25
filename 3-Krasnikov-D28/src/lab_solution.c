@@ -10,27 +10,25 @@
 #define IDX_TO_WAGON(idx) ((idx) + 1)
 
 typedef struct Node {
-    int wagon;
+    unsigned wagon;
     struct Node* next;
 } Node;
 
-int* g_wagonsTimes; // t(w)
-int g_wagonsCount; // |W|
-int g_timeBeforeDeparture; // D
-int g_maximumWagonsLeft; // K
+unsigned* g_wagonsTimes; // t(w)
+unsigned g_wagonsCount; // |W|
+unsigned g_timeBeforeDeparture; // D
+unsigned g_maximumWagonsLeft; // K
 Node** g_wagonsRestrictions;
 
-int g_curTime;
-int g_minTime;
-int g_maxWagonsUsed;
-int* g_wagonsRestricted;
-int* g_wagonsUsed;
-int* g_curSolution;
-int* g_bestSolution;
+unsigned g_curTime;
+unsigned g_minTime;
+unsigned g_maxWagonsUsed;
+unsigned* g_wagonsRestricted;
+unsigned* g_wagonsUsed;
+unsigned* g_curSolution;
+unsigned* g_bestSolution;
 
-//int DistributeWagons(const char* filenameIn, const char* filenameOut);
-
-bool ListPush(Node** p_list, int wagon) {
+bool ListPush(Node** p_list, unsigned wagon) {
     Node* newNode = (Node*)malloc(sizeof(Node));
     if (!newNode)
         return false;
@@ -58,7 +56,7 @@ void ListDestroy(Node* list) {
 }
 
 void RestrictionsDestroy() {
-    for (int i = 0; i < g_wagonsCount; i++)
+    for (unsigned i = 0; i < g_wagonsCount; i++)
         ListDestroy(g_wagonsRestrictions[i]);
     free(g_wagonsRestrictions);
 }
@@ -70,7 +68,7 @@ bool ReadInputData(const char* filename) {
 
     fscanf(file, "%d %d %d", &g_wagonsCount, &g_timeBeforeDeparture, &g_maximumWagonsLeft);
 
-    g_wagonsTimes = (int*)malloc(g_wagonsCount * sizeof(int));
+    g_wagonsTimes = (unsigned*)malloc(g_wagonsCount * sizeof(unsigned));
     if (!g_wagonsTimes) {
         fclose(file);
         return false;
@@ -83,13 +81,13 @@ bool ReadInputData(const char* filename) {
         return false;
     }
 
-    for (int i = 0; i < g_wagonsCount; i++)
+    for (unsigned i = 0; i < g_wagonsCount; i++)
         fscanf(file, "%d ", &g_wagonsTimes[i]);
 
-    int pairsCount = 0;
+    unsigned pairsCount = 0;
     fscanf(file, "%d", &pairsCount);
-    for (int i = 0; i < pairsCount; i++) {
-        int before = 0, after = 0;
+    for (unsigned i = 0; i < pairsCount; i++) {
+        unsigned before = 0, after = 0;
         fscanf(file, "%d %d", &before, &after);
         if (!ListPush(&g_wagonsRestrictions[WAGON_TO_IDX(after)], WAGON_TO_IDX(before))) {
             free(g_wagonsTimes);
@@ -102,7 +100,7 @@ bool ReadInputData(const char* filename) {
     return true;
 }
 
-void CompressSearchSpace(int wagon) {
+void CompressSearchSpace(unsigned wagon) {
     g_wagonsUsed[wagon] = 1;
     Node* iter = g_wagonsRestrictions[wagon];
     while (iter) {
@@ -111,7 +109,7 @@ void CompressSearchSpace(int wagon) {
     }
 }
 
-void DecompressSearchSpace(int wagon) {
+void DecompressSearchSpace(unsigned wagon) {
     g_wagonsUsed[wagon] = 0;
     Node* iter = g_wagonsRestrictions[wagon];
     while (iter) {
@@ -120,15 +118,19 @@ void DecompressSearchSpace(int wagon) {
     }
 }
 
-void FindBestSolution(int m) {
+void FindBestSolution(unsigned m) {
     if (m >= g_wagonsCount - g_maximumWagonsLeft)
-        if (m >= g_maxWagonsUsed && g_curTime < g_minTime) {
+        if (m == g_maxWagonsUsed && g_curTime < g_minTime) {
+            g_minTime = g_curTime;
+            memcpy(g_bestSolution, g_curSolution, g_wagonsCount * sizeof(unsigned));
+        }
+        else if (m > g_maxWagonsUsed) {
             g_maxWagonsUsed = m;
             g_minTime = g_curTime;
-            memcpy(g_bestSolution, g_curSolution, g_wagonsCount * sizeof(int));
+            memcpy(g_bestSolution, g_curSolution, g_wagonsCount * sizeof(unsigned));
         }
     if (m < g_wagonsCount)
-        for (int i = 0; i < g_wagonsCount; i++) {
+        for (unsigned i = 0; i < g_wagonsCount; i++) {
             if (!g_wagonsRestricted[i] && !g_wagonsUsed[i] && g_curTime + g_wagonsTimes[i] <= g_timeBeforeDeparture) {
                 g_curSolution[m] = i;
                 g_curTime += g_wagonsTimes[i];
@@ -144,21 +146,21 @@ bool FindBestSolutionWrap() {
     g_curTime = 0; 
     g_minTime = g_timeBeforeDeparture + 1; 
     g_maxWagonsUsed = 0;
-    g_curSolution = (int*)malloc(g_wagonsCount * sizeof(int));
+    g_curSolution = (unsigned*)malloc(g_wagonsCount * sizeof(unsigned));
     if (!g_curSolution)
         return false;
-    g_bestSolution = (int*)malloc(g_wagonsCount * sizeof(int));
+    g_bestSolution = (unsigned*)malloc(g_wagonsCount * sizeof(unsigned));
     if (!g_bestSolution) {
         free(g_curSolution);
         return false;
     }
-    g_wagonsRestricted = (int*)calloc(g_wagonsCount, sizeof(int));
+    g_wagonsRestricted = (unsigned*)calloc(g_wagonsCount, sizeof(unsigned));
     if (!g_wagonsRestricted) {
         free(g_curSolution);
         free(g_bestSolution);
         return false;
     }
-    g_wagonsUsed = (int*)calloc(g_wagonsCount, sizeof(int));
+    g_wagonsUsed = (unsigned*)calloc(g_wagonsCount, sizeof(unsigned));
     if (!g_wagonsRestricted) {
         free(g_curSolution);
         free(g_bestSolution);
@@ -172,20 +174,21 @@ bool FindBestSolutionWrap() {
     return true;
 }
 
-int DistributeWagons(const char* filenameIn, const char* filenameOut) {
+unsigned DistributeWagons(const char* filenameIn, const char* filenameOut) {
     FILE* fileOut = fopen(filenameOut, "w");
     if (!fileOut)
         return -1;
 
-    ReadInputData(filenameIn); // allocating memory for times and restrictions
+    if (!ReadInputData(filenameIn)) // allocating memory for times and restrictions
+        return -1;
 
 #ifdef DEBUG
     printf("g_wagonsTimes: ");
-    for (int i = 0; i < g_wagonsCount; i++)
+    for (unsigned i = 0; i < g_wagonsCount; i++)
         printf("%d ", g_wagonsTimes[i]);
     printf("\n");
     printf("g_wagonsRestrictions:\n");
-    for (int i = 0; i < g_wagonsCount; i++) {
+    for (unsigned i = 0; i < g_wagonsCount; i++) {
         printf("Cannot be inserted after %d: ", IDX_TO_WAGON(i));
         ListPrint(g_wagonsRestrictions[i]);
         printf("\n");
@@ -194,7 +197,7 @@ int DistributeWagons(const char* filenameIn, const char* filenameOut) {
 
     if (FindBestSolutionWrap()) {
         if (g_maxWagonsUsed > 0) {
-            for (int i = 0; i < g_maxWagonsUsed; i++)
+            for (unsigned i = 0; i < g_maxWagonsUsed; i++)
                 fprintf(fileOut, "%d ", IDX_TO_WAGON(g_bestSolution[i]));
             fprintf(fileOut, "\n");
         }

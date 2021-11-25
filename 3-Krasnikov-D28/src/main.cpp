@@ -5,11 +5,18 @@
 #include <gtest/gtest.h>
 #include "..\include\lab_solution.h"
 
-#define _TESTS
+#ifdef _DEBUG
+#define TESTS_CASES "FunctionalTest*"
+#else
+#define TESTS_CASES "StressTest*"
+#endif
+
+#define TESTS
 
 int main(int argc, char** argv) {
-#ifdef _TESTS
+#ifdef TESTS
 	::testing::InitGoogleTest(&argc, argv);
+	::testing::GTEST_FLAG(filter) = TESTS_CASES;
 	RUN_ALL_TESTS();
 	return 0;
 #else

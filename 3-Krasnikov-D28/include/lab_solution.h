@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-int DistributeWagons(const char* filenameIn, const char* filenameOut);
+unsigned DistributeWagons(const char* filenameIn, const char* filenameOut);
 
 #ifdef __cplusplus
 }
