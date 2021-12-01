@@ -175,12 +175,8 @@ bool FindBestSolutionWrap() {
 }
 
 unsigned DistributeWagons(const char* filenameIn, const char* filenameOut) {
-    FILE* fileOut = fopen(filenameOut, "w");
-    if (!fileOut)
-        return -1;
-
     if (!ReadInputData(filenameIn)) // allocating memory for times and restrictions
-        return -1;
+        return 1;
 
 #ifdef DEBUG
     printf("g_wagonsTimes: ");
@@ -194,6 +190,10 @@ unsigned DistributeWagons(const char* filenameIn, const char* filenameOut) {
         printf("\n");
     }
 #endif
+
+    FILE* fileOut = fopen(filenameOut, "w");
+    if (!fileOut)
+        return 1;
 
     if (FindBestSolutionWrap()) {
         if (g_maxWagonsUsed > 0) {
@@ -212,5 +212,5 @@ unsigned DistributeWagons(const char* filenameIn, const char* filenameOut) {
     free(g_wagonsTimes);
     RestrictionsDestroy();
     fclose(fileOut);
-    return -1;
+    return 1;
 }
