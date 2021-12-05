@@ -161,7 +161,7 @@ bool FindBestSolutionWrap() {
         return false;
     }
     g_wagonsUsed = (unsigned*)calloc(g_wagonsCount, sizeof(unsigned));
-    if (!g_wagonsRestricted) {
+    if (!g_wagonsUsed) {
         free(g_curSolution);
         free(g_bestSolution);
         free(g_wagonsRestricted);

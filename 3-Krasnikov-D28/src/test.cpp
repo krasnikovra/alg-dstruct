@@ -18,10 +18,7 @@ int ReadOutputData(const char* filenameOut, int* solution, int size) {
 }
 
 void TestSuite(const char* filenameIn, const char* filenameOut, const char* filenameCorrectOut) {
-	int distWagError = DistributeWagons(
-		filenameIn,
-		filenameOut
-	);
+	int distWagError = DistributeWagons(filenameIn, filenameOut);
 	if (!distWagError) {
 		int solution[MAX_WAGONS_COUNT_IN_FUNC_TEST] = { 0 }, correct_solution[MAX_WAGONS_COUNT_IN_FUNC_TEST] = { 0 };
 		memset(solution, SOME_GARBAGE_BYTE, MAX_WAGONS_COUNT_IN_FUNC_TEST * sizeof(int));
