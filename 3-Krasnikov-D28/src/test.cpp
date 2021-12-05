@@ -88,7 +88,7 @@ TEST_F(FunctionalTest, MaximumWagonsTest) {
 }
 
 TEST_F(FunctionalTest, MinimumTimeTest) {
-// Here we have three solutions (1, 2) (1, 3) (2, 3) with times 8, 7, 9 and second has minimum time
+// Here we have three solutions (1, 2) (2, 3) (1, 3) with times 8, 7, 9 and second has minimum time
 	TestSuite(
 		"test_data/MinimumTimeTest/input.txt",
 		"test_data/MinimumTimeTest/output.txt",
