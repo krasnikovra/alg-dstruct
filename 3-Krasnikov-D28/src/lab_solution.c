@@ -104,7 +104,7 @@ void CompressSearchSpace(unsigned wagon) {
     g_wagonsUsed[wagon] = 1;
     Node* iter = g_wagonsRestrictions[wagon];
     while (iter) {
-        g_wagonsRestricted[iter->wagon] = 1;
+        g_wagonsRestricted[iter->wagon] += 1;
         iter = iter->next;
     }
 }
@@ -113,7 +113,7 @@ void DecompressSearchSpace(unsigned wagon) {
     g_wagonsUsed[wagon] = 0;
     Node* iter = g_wagonsRestrictions[wagon];
     while (iter) {
-        g_wagonsRestricted[iter->wagon] = 0;
+        g_wagonsRestricted[iter->wagon] -= 1;
         iter = iter->next;
     }
 }
