@@ -1,0 +1,8 @@
+.vs
+*sln
+*vcxproj*
+**Debug
+**Release
+**/output.txt
+*googletest
+test_data/StressTest
