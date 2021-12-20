@@ -146,6 +146,7 @@ TEST_F(FillTreeFuncTest, ComplicatedTree) {
                   /
                  8
     */
+
     Tree nodes[9] = { 0 };
     const int size = sizeof(nodes) / sizeof(Tree);
     InitNodesArray(nodes, size, SOME_INIT_DATA);
@@ -209,6 +210,7 @@ TEST_F(PrintTreeFuncTest, OneNodeTree) {
     /*
         0
     */
+
     Tree tree = { 0, nullptr };
     PrintTreeFuncTestSuite(&tree, OUTPUT_FILENAME(OneNodeTree), "PrintTreeFuncTest/OneNodeTree.txt");
 }
@@ -293,6 +295,7 @@ TEST_F(PrintTreeFuncTest, ComplicatedTree) {
                   /
                  8
     */
+
     Tree nodes[9] = { 0 };
     const int size = sizeof(nodes) / sizeof(Tree);
     InitNodesArrayWithIndices(nodes, size);
