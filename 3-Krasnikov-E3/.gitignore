@@ -3,6 +3,6 @@
 *vcxproj*
 **Debug
 **Release
-**/output.txt
+**output.txt
 *googletest
 test_data/StressTest
