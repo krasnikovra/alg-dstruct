@@ -9,7 +9,8 @@
 #define SOME_INIT_DATA 28164
 #define SPACES 1
 #define BUF_SIZE 1024
-#define OUTPUT_FILENAME(TestName) "PrintTreeFuncTest/"#TestName"_output.txt" // is being used in .gitignore
+#define CORRECT_FILENAME(TestCase, TestName) #TestCase"/"#TestName".txt"
+#define OUTPUT_FILENAME(TestCase, TestName) #TestCase"/"#TestName"_output.txt" // is being used in .gitignore
 
 class FunctionalTest : public ::testing::Test {
 protected:
@@ -212,7 +213,7 @@ TEST_F(PrintTreeFuncTest, OneNodeTree) {
     */
 
     Tree tree = { 0, nullptr };
-    PrintTreeFuncTestSuite(&tree, OUTPUT_FILENAME(OneNodeTree), "PrintTreeFuncTest/OneNodeTree.txt");
+    PrintTreeFuncTestSuite(&tree, OUTPUT_FILENAME(PrintTreeFuncTest, OneNodeTree), CORRECT_FILENAME(PrintTreeFuncTest, OneNodeTree));
 }
 
 TEST_F(PrintTreeFuncTest, OneLevelTree) {
@@ -229,7 +230,7 @@ TEST_F(PrintTreeFuncTest, OneLevelTree) {
     nodes[0].left = &nodes[1];
     nodes[0].right = &nodes[2];
 
-    PrintTreeFuncTestSuite(&nodes[0], OUTPUT_FILENAME(OneLevelTree), "PrintTreeFuncTest/OneLevelTree.txt");
+    PrintTreeFuncTestSuite(&nodes[0], OUTPUT_FILENAME(PrintTreeFuncTest, OneLevelTree), CORRECT_FILENAME(PrintTreeFuncTest, OneLevelTree));
 }
 
 TEST_F(PrintTreeFuncTest, OneWayTree) {
@@ -254,7 +255,7 @@ TEST_F(PrintTreeFuncTest, OneWayTree) {
     nodes[2].right = &nodes[3];
     nodes[3].left = &nodes[4];
 
-    PrintTreeFuncTestSuite(&nodes[0], OUTPUT_FILENAME(OneWayTree), "PrintTreeFuncTest/OneWayTree.txt");
+    PrintTreeFuncTestSuite(&nodes[0], OUTPUT_FILENAME(PrintTreeFuncTest, OneWayTree), CORRECT_FILENAME(PrintTreeFuncTest, OneWayTree));
 }
 
 TEST_F(PrintTreeFuncTest, NearlyOneWayTree) {
@@ -280,7 +281,7 @@ TEST_F(PrintTreeFuncTest, NearlyOneWayTree) {
     nodes[2].left = &nodes[5];
     nodes[3].left = &nodes[4];
 
-    PrintTreeFuncTestSuite(&nodes[0], OUTPUT_FILENAME(NearlyOneWayTree), "PrintTreeFuncTest/NearlyOneWayTree.txt");
+    PrintTreeFuncTestSuite(&nodes[0], OUTPUT_FILENAME(PrintTreeFuncTest, NearlyOneWayTree), CORRECT_FILENAME(PrintTreeFuncTest, NearlyOneWayTree));
 }
 
 TEST_F(PrintTreeFuncTest, ComplicatedTree) {
@@ -309,5 +310,122 @@ TEST_F(PrintTreeFuncTest, ComplicatedTree) {
     nodes[4].right = &nodes[7];
     nodes[7].left = &nodes[8];
 
-    PrintTreeFuncTestSuite(&nodes[0], OUTPUT_FILENAME(ComplicatedTree), "PrintTreeFuncTest/ComplicatedTree.txt");
+    PrintTreeFuncTestSuite(&nodes[0], OUTPUT_FILENAME(PrintTreeFuncTest, ComplicatedTree), CORRECT_FILENAME(PrintTreeFuncTest, ComplicatedTree));
+}
+
+//-----------------------------------------------------
+// Functional Tests
+//-----------------------------------------------------
+
+auto& FunctionalTestSuite = PrintTreeFuncTestSuite;
+
+TEST_F(FunctionalTest, OneNodeTree) {
+    /*
+        0
+    */
+
+    Tree tree = { 0, nullptr };
+    FillTreeWithMinLeafsHeight(&tree);
+    FunctionalTestSuite(&tree, OUTPUT_FILENAME(FunctionalTest, OneNodeTree), CORRECT_FILENAME(FunctionalTest, OneNodeTree));
+}
+
+TEST_F(FunctionalTest, OneLevelTree) {
+    /*
+          0
+         / \
+        1   2
+    */
+
+    Tree nodes[3] = { 0 };
+    const int size = sizeof(nodes) / sizeof(Tree);
+    InitNodesArray(nodes, size, SOME_INIT_DATA);
+
+    nodes[0].left = &nodes[1];
+    nodes[0].right = &nodes[2];
+
+    FillTreeWithMinLeafsHeight(&nodes[0]);
+    FunctionalTestSuite(&nodes[0], OUTPUT_FILENAME(FunctionalTest, OneLevelTree), CORRECT_FILENAME(FunctionalTest, OneLevelTree));
+}
+
+TEST_F(FunctionalTest, OneWayTree) {
+    /*
+            0
+           /
+          1
+           \
+            2
+             \
+              3
+             /
+            4
+    */
+
+    Tree nodes[5] = { 0 };
+    const int size = sizeof(nodes) / sizeof(Tree);
+    InitNodesArray(nodes, size, SOME_INIT_DATA);
+
+    nodes[0].left = &nodes[1];
+    nodes[1].right = &nodes[2];
+    nodes[2].right = &nodes[3];
+    nodes[3].left = &nodes[4];
+
+    FillTreeWithMinLeafsHeight(&nodes[0]);
+    FunctionalTestSuite(&nodes[0], OUTPUT_FILENAME(FunctionalTest, OneWayTree), CORRECT_FILENAME(FunctionalTest, OneWayTree));
+}
+
+TEST_F(FunctionalTest, NearlyOneWayTree) {
+    /*
+        0
+       /
+      1
+       \
+        2
+       / \
+      5   3
+         /
+        4
+    */
+
+    Tree nodes[6] = { 0 };
+    const int size = sizeof(nodes) / sizeof(Tree);
+    InitNodesArray(nodes, size, SOME_INIT_DATA);
+
+    nodes[0].left = &nodes[1];
+    nodes[1].right = &nodes[2];
+    nodes[2].right = &nodes[3];
+    nodes[2].left = &nodes[5];
+    nodes[3].left = &nodes[4];
+
+    FillTreeWithMinLeafsHeight(&nodes[0]);
+    FunctionalTestSuite(&nodes[0], OUTPUT_FILENAME(FunctionalTest, NearlyOneWayTree), CORRECT_FILENAME(FunctionalTest, NearlyOneWayTree));
+}
+
+TEST_F(FunctionalTest, ComplicatedTree) {
+    /*
+             0
+            / \
+           1   2
+              / \
+             3   4
+            / \   \
+           5   6   7
+                  /
+                 8
+    */
+
+    Tree nodes[9] = { 0 };
+    const int size = sizeof(nodes) / sizeof(Tree);
+    InitNodesArray(nodes, size, SOME_INIT_DATA);
+
+    nodes[0].left = &nodes[1];
+    nodes[0].right = &nodes[2];
+    nodes[2].left = &nodes[3];
+    nodes[2].right = &nodes[4];
+    nodes[3].left = &nodes[5];
+    nodes[3].right = &nodes[6];
+    nodes[4].right = &nodes[7];
+    nodes[7].left = &nodes[8];
+
+    FillTreeWithMinLeafsHeight(&nodes[0]);
+    FunctionalTestSuite(&nodes[0], OUTPUT_FILENAME(FunctionalTest, ComplicatedTree), CORRECT_FILENAME(FunctionalTest, ComplicatedTree));
 }
