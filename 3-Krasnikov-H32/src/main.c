@@ -42,6 +42,8 @@ int main(void) {
 
     int res = TreapSumOfHKeysLimit(treap, 2, 5); // expect res == 140 (40 + 30 + 70)
 
+    TreapDestroy(treap);
+
     return 0;
 #endif
 }
@@ -153,7 +155,8 @@ int TestSystemMainCycle(FILE* in, FILE* out) {
             fprintf(out, "%s\n", TreapFind(treap, val) ? "yes" : "no");
             break;
         default:
-            return -1;
+            TreapDestroy(treap);
+            return 0;
         }
     }
     TreapDestroy(treap);
