@@ -24,7 +24,7 @@ Treap* TreapInsert(Treap* treap, int tKey, int hKey);
 Treap* TreapRemove(Treap* treap, int tKey);
 void TreapDestroy(Treap* treap);
 int TreapSumOfHKeys(Treap* treap);
-int TreapSumOfHKeysLimit(Treap* treap, int ltKey, int rtKey); // sum of all y in (x,y) such as ltKey <= y < rKey
+int TreapSumOfHKeysLimit(Treap* treap, int ltKey, int rtKey); // sum of all y in (x,y) such as ltKey <= x < rKey
 
 int TestSystemMainCycle(FILE* in, FILE* out);
 
