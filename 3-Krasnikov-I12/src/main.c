@@ -150,7 +150,6 @@ bool _InsertNonfull(Node* node, const int key, const int t) {
         // if appropriate child is full we need to split it
         if (node->children[i]->cnt == 2 * t - 1) {
             if (!_SplitChild(node, t, i))
-                // TODO
                 return false;
             if (key > node->keys[i])
                 ++i;
