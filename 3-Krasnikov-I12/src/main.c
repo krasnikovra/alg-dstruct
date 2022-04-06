@@ -193,7 +193,6 @@ Node* _FindNodeContainsKey(const BTree* tree, const int key, int* idx) {
         *idx = _FindKeyInArr(iter->keys, iter->cnt, key);
         if (*idx != INVALID_IDX) 
             return iter;
-            
         // if greater than every child
         // proceed to the last child
         if (key >= iter->keys[iter->cnt - 1]) {
