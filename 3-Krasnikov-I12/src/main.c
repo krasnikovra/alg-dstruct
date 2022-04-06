@@ -1,13 +1,13 @@
-#define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <assert.h>
 
+#define BUF_SIZE 16
 #define INVALID_IDX -1
+#define BTREE_PARAM 3
 
 typedef struct Node {
     bool isLeaf;
@@ -44,34 +44,10 @@ bool BTreeInsert(BTree* tree, const int key);
 void BTreeRemove(BTree* tree, const int key);
 void BTreeDestroy(BTree* tree);
 
-void StupidPrint(Node* node, const int t, int layer) {
-    printf("-------------------Layer %d CNT = %d------------------\n", layer, node->cnt);
-    for (int i = 0; i < node->cnt; i++)
-        printf("%d ", node->keys[i]);
-    printf("\n");
-    if (node->isLeaf)
-        printf("LEAF\n");
-    if (!node->isLeaf)
-        for (int i = 0; i < node->cnt + 1; i++)
-            StupidPrint(node->children[i], t, layer + 1);
-}
+int TestSystemMainCycle(FILE* in, FILE* out);
 
 int main() {
-    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-
-    const int t = 3;
-
-    BTree tree = { t, NULL };
-    BTreeInit(&tree);
-
-    for (int i = 0; i < 100000; i++)
-        BTreeInsert(&tree, rand() % 50000);
-
-    for (int i = 0; i < 10000000; i++)
-        BTreeRemove(&tree, rand() % 50000);
-
-    BTreeDestroy(&tree);
-    return 0;
+    return TestSystemMainCycle(stdin, stdout);
 }
 
 Node* _NodeAllocate(const int t) {
@@ -415,4 +391,31 @@ void _Destroy(Node* node, const int t) {
 void BTreeDestroy(BTree* tree) {
     _Destroy(tree->root, tree->t);
     tree->root = NULL;
+}
+
+int TestSystemMainCycle(FILE* in, FILE* out) {
+    BTree tree = { BTREE_PARAM, NULL };
+    BTreeInit(&tree);
+    char buf[BUF_SIZE] = { 0 };
+    char c = 0;
+    int val = 0;
+    while (fgets(buf, BUF_SIZE, in)) {
+        sscanf(buf, "%c %d", &c, &val);
+        switch (c) {
+        case 'a':
+            BTreeInsert(&tree, val);
+            break;
+        case 'r':
+            BTreeRemove(&tree, val);
+            break;
+        case 'f':
+            fprintf(out, "%s\n", BTreeFind(&tree, val) ? "yes" : "no");
+            break;
+        default:
+            BTreeDestroy(&tree);
+            return 0;
+        }
+    }
+    BTreeDestroy(&tree);
+    return 0;
 }
