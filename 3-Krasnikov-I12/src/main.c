@@ -8,6 +8,7 @@
 #define BUF_SIZE 16
 #define INVALID_IDX -1
 #define BTREE_PARAM 3
+#define INT_MAX_LEN 10
 
 typedef struct Node {
     bool isLeaf;
@@ -37,12 +38,14 @@ static void _MergeChild(Node* node, const int keyIdx);
 static void _RemoveFromLeaf(Node* node, const int t, const int key);
 static void _Remove(Node* node, Node* nodeContainsKey, const int idx, const int t, const int key);
 static void _Destroy(Node* node, const int t);
+static void _Print(const Node* node, const int t, int margin);
 
 bool BTreeInit(BTree* tree);
 bool BTreeFind(const BTree* tree, const int key);
 bool BTreeInsert(BTree* tree, const int key);
 void BTreeRemove(BTree* tree, const int key);
 void BTreeDestroy(BTree* tree);
+void BTreePrint(BTree* tree);
 
 int TestSystemMainCycle(FILE* in, FILE* out);
 
@@ -416,4 +419,25 @@ int TestSystemMainCycle(FILE* in, FILE* out) {
     }
     BTreeDestroy(&tree);
     return 0;
+}
+
+void _Print(const Node* node, const int t, int margin) {
+    if (!node->isLeaf)
+        for (int i = 0; i < (node->cnt + 1) / 2; i++)
+            _Print(node->children[i], t, margin + 1);
+    for (int i = 0; i < margin * ((INT_MAX_LEN + 1) * (2 * t - 1) + 1); i++)
+        // (INT_MAX_LEN + 2) * (2 * t - 1) is how much ints take + comma (and last bracket)
+        // + 1 is the first bracket
+        printf(" ");
+    printf("[");
+    for (int i = 0; i < node->cnt - 1; ++i)
+        printf("%i,", node->keys[i]);
+    printf("%i]\n", node->keys[node->cnt - 1]);
+    if (!node->isLeaf)
+        for (int i = (node->cnt + 1) / 2; i < node->cnt + 1; i++)
+            _Print(node->children[i], t, margin + 1);
+}
+
+void BTreePrint(BTree* tree) {
+    _Print(tree->root, tree->t, 0);
 }
