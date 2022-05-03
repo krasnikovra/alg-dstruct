@@ -37,7 +37,7 @@ static void _RightRotate(Node* node, const int keyIdx);
 static void _MergeChild(Node* node, const int keyIdx);
 static void _RemoveFromLeaf(Node* node, const int t, const int key);
 static void _Remove(Node* node, Node* nodeContainsKey, const int idx, const int t, const int key);
-static void _Destroy(Node* node, const int t);
+static void _Destroy(Node* node);
 static void _Print(const Node* node, const int t, int margin);
 
 bool BTreeInit(BTree* tree);
@@ -64,8 +64,8 @@ Node* _NodeAllocate(const int t) {
     }
     res->children = (Node**)malloc(2 * t * sizeof(Node*));
     if (!res->children) {
-        free(res);
         free(res->keys);
+        free(res);
         return NULL;
     }
     res->cnt = 0;
@@ -120,6 +120,7 @@ bool BTreeInsert(BTree* tree, const int key) {
         newRoot->children[0] = oldRoot;
         if (!_SplitChild(newRoot, tree->t, 0)) {
             _NodeDestroy(newRoot);
+            tree->root = oldRoot;
             return false;
         }
         return _InsertNonfull(newRoot, key, tree->t);
@@ -382,15 +383,15 @@ void BTreeRemove(BTree* tree, const int key) {
     }
 }
 
-void _Destroy(Node* node, const int t) {
+void _Destroy(Node* node) {
     if (!node->isLeaf)
         for (int i = 0; i < node->cnt + 1; ++i)
-            _Destroy(node->children[i], t);
+            _Destroy(node->children[i]);
     _NodeDestroy(node);
 }
 
 void BTreeDestroy(BTree* tree) {
-    _Destroy(tree->root, tree->t);
+    _Destroy(tree->root);
     tree->root = NULL;
 }
 
@@ -438,6 +439,17 @@ void _Print(const Node* node, const int t, int margin) {
             _Print(node->children[i], t, margin + 1);
 }
 
+/*
+                                                                    [2,4,5]
+                                  [9]
+                                                                    [12,13,14]
+[15]
+                                                                    [17,25]
+                                                                    [32]
+                                  [27,33,39]
+                                                                    [35]
+                                                                    [47,54,65]
+*/
 void BTreePrint(BTree* tree) {
     _Print(tree->root, tree->t, 0);
 }
