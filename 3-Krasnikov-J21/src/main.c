@@ -85,11 +85,16 @@ bool HashMapInsert(HashMap* hashMap, const char* str) {
         if (hashMap->data[index].status == FREE && firstDeleted == -1)
             firstDeleted = index;
         index = (index + hashMap->step) % hashMap->size;
-        if (index == indexStart)
-            return false;
+        if (index == indexStart) { // iterated through all the table cells
+            if (firstDeleted == -1) // and no cells ready to re-write
+                return false;
+            else // all cells have non-null str, but we found one to re-write
+                break;
+        }
     }
     if (firstDeleted != -1) {
-        free(hashMap->data[firstDeleted].str);
+        if (hashMap->data[firstDeleted].str) // this could be NULL if further malloc failed one time
+            free(hashMap->data[firstDeleted].str);
         index = (size_t)firstDeleted;
     }
     hashMap->data[index].str = (char*)malloc((strlen(str) + 1) * sizeof(char));
