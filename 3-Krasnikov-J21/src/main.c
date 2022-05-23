@@ -93,7 +93,13 @@ bool HashMapInsert(HashMap* hashMap, const char* str) {
         }
     }
     if (firstDeleted != -1) {
-        if (hashMap->data[firstDeleted].str) // this could be NULL if further malloc failed one time
+        if (hashMap->data[firstDeleted].str) 
+        // after this free we have malloc which means after free
+        // we will have a valid non-null ptr or nullptr
+        // the first case is ok and the second means we
+        // can find this null FREE cell with breaking while cond
+        // then if no firstDeleted we have no free of null which is ok
+        // or if there is firstDeleted it is non-null which is also ok
             free(hashMap->data[firstDeleted].str);
         index = (size_t)firstDeleted;
     }
